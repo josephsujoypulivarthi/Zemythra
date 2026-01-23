@@ -29,17 +29,17 @@ Both team members worked simultaneously from Day-1 to Day-30 using Git for colla
 
 ---
 
-# Key Features
+# 🧠Key Features
 
-Core Features :
+🟢 Core Features :
 
 . Disease Risk Prediction (Machine Learning)  . Temporal Disease Progression Modeling (LSTM)  . Risk Stratification (Low / Medium / High)  . Explainable AI using SHAP  . Patient Health . Timeline Visualization
 
- Advanced Features :
+🟡 Advanced Features :
 
 . Prediction Uncertainty Estimation  . Data Drift Detection  . Multimodal Fusion (Future Scope)
 
-Secondary Features :
+🔵 Secondary Features :
 
 . Emergency Risk Trigger  . Rule-based Hospital Recommendation
 
