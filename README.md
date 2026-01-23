@@ -171,16 +171,16 @@ This project is developed for "academic purposes only" under JNTUH curriculum an
 
 # 📦 requirements.txt 
 
-txt
-fastapi
-uvicorn
-pandas
-numpy
-scikit-learn
-tensorflow
-shap
-joblib
-scipy
-streamlit
+txt ,
+fastapi , 
+uvicorn ,
+pandas ,
+numpy ,
+scikit-learn , 
+tensorflow ,
+shap ,
+joblib ,
+scipy ,
+streamlit ,
 requests
 
