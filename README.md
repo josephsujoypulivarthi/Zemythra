@@ -99,7 +99,6 @@ graph TD;
 
 
 
-
 # 📂 Project Structure 
 
 
@@ -142,7 +141,7 @@ graph TD;
 * Risk score evolution over time
 
 
-#⚙️ Technologies & Libraries
+# ⚙️ Technologies & Libraries
 
 * Programming Language: Python 3.9+  
 *Machine Learning & AI: scikit-learn, TensorFlow / Keras, SHAP, NumPy, Pandas  
