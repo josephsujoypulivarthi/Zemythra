@@ -53,52 +53,77 @@ Both team members worked simultaneously from Day-1 to Day-30 using Git for colla
 * Rule-based Hospital Recommendation
  
 
-#🏗️ System Architecture
+# 🖥️ System Architecture & components
 
 ```mermaid
-flowchart LR
-    A[Raw Clinical Data (CSV)] --> B[Data Preprocessing] --> C[Unified AI Model]
+graph TD;
+    A["Raw Data Input CSV"] --> B["Preprocessing"]
+    B --> C["Unified AI Model"]
 
-    C --> C1[Risk Prediction]
-    C --> C2[Uncertainty Estimation]
-    C --> C3[LSTM Progression]
-    C --> C4[Explainable AI]
-    C --> C5[Drift Detection]
+    C --> C1["Risk Prediction"]
+    C --> C2["Uncertainty Estimation"]
+    C --> C3["LSTM Progression"]
+    C --> C4["Explainable AI"]
+    C --> C5["Drift Detection"]
 
-    C1 --> D[Decision Engine]
+    C1 --> D["Decision Engine"]
     C2 --> D
     C3 --> D
     C4 --> D
     C5 --> D
 
-    D --> D1[Risk Stratification]
-    D --> D2[Emergency Trigger]
-    D --> D3[Hospital Recommendation]
+    D --> D1["Risk Stratification"]
+    D --> D2["Emergency Trigger"]
+    D --> D3["Hospital Recommendation"]
 
-    D1 --> E[REST APIs (FastAPI)]
+    D1 --> E["REST APIs FastAPI"]
     D2 --> E
     D3 --> E
 
-    E --> F[Frontend Dashboard (Streamlit)]
+    E --> F["Frontend Dashboard Streamlit"]
+
+```
 
 
-#📂 Project Structure 
+* System Components
 
-backend/
-├── data/
-│   └── raw/
-│       ├── clinical_risk_data.csv
-│       ├── patient_time_series.csv
-│       ├── risk_thresholds.csv
-│       └── feature_descriptions.csv
-├── model.py                      # ML, LSTM, Explainability, Drift
-├── decision.py                   # Risk & Emergency Logic
-├── api.py                        # REST APIs
-└── main.py                       # Application Entry Point
-frontend/
-└── app.py                        # Streamlit Dashboard
-├── README.md
-├── requirements.txt
+| S.No | Stage            | Components                                                                 |
+|------|------------------|----------------------------------------------------------------------------|
+| 1    | Raw Data Input   | Raw Clinical Data (CSV)                                                    |
+| 2    | Preprocessing    | Data Preprocessing                                                         |
+| 3    | AI Model         | Risk Prediction, Uncertainty Estimation, LSTM Progression, Explainable AI, Drift Detection |
+| 4    | Decision Engine  | Risk Stratification, Emergency Trigger, Hospital Recommendation            |
+| 5    | API Layer        | REST APIs (FastAPI)                                                        |
+| 6    | Frontend         | Streamlit Dashboard                                                        |
+
+
+
+
+
+# 📂 Project Structure 
+
+
+# Project Structure
+
+1. **backend(b)/** 
+   -  ↳ data/
+    -  ↳ raw/
+       - /clinical_risk_data.csv  
+       - /patient_time_series.csv  
+       - /risk_thresholds.csv  
+       - /feature_descriptions.csv  
+   - b/model.py → ML, LSTM, Explainability, Drift  
+   - b/decision.py → Risk & Emergency Logic  
+   - b/api.py → REST APIs  
+   - b/main.py → Application Entry Point  
+
+3. **frontend/**
+   - ↳ app.py → Streamlit Dashboard  
+
+4. **README.md**
+
+5. **requirements.txt**
+
 
 
 # 📊 Datasets Used
