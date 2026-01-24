@@ -111,7 +111,7 @@ Bash :
 git clone https://github.com/your-username/clinical-intelligence-system.git
 cd clinical-intelligence-system
 
-2. Create & Activate Virtual Environment
+2. Create & Activate Virtual Environment :
 . Windows: python -m venv venv followed by venv\Scripts\activate   
 
 . macOS / Linux: python3 -m venv venv followed by source venv/bin/activate
