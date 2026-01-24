@@ -125,7 +125,7 @@ graph TD;
 
 # 📊 Datasets Used
 
-1) Clinical Risk Dataset
+1. Clinical Risk Dataset
 
 * Age
 * Blood Pressure
@@ -134,8 +134,9 @@ graph TD;
 * BMI
 * Heart Rate
 * Disease Label
+#
 
-2) Patient Time-Series Dataset
+2. Patient Time-Series Dataset
 
 * Monthly health records
 * Risk score evolution over time
@@ -144,7 +145,7 @@ graph TD;
 # ⚙️ Technologies & Libraries
 
 * Programming Language: Python 3.9+  
-*Machine Learning & AI: scikit-learn, TensorFlow / Keras, SHAP, NumPy, Pandas  
+* Machine Learning & AI: scikit-learn, TensorFlow / Keras, SHAP, NumPy, Pandas  
 * Backend: FastAPI, Uvicorn  
 * Frontend: Streamlit  
 * Tools: VS Code, Git & GitHub
