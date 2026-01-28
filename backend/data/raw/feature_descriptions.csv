@@ -1,0 +1,8 @@
+feature,description
+age,Patient age
+sys_bp,Systolic blood pressure
+dia_bp,Diastolic blood pressure
+glucose,Blood glucose level
+cholesterol,Serum cholesterol
+bmi,Body Mass Index
+heart_rate,Resting heart rate
