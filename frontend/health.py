@@ -37,11 +37,48 @@ if role == "User":
         submit = st.form_submit_button("Predict Risk")
 
     if submit:
-        # Dummy visualization
+        payload = {
+        "age": age,
+        "gender": 1,
+        "sys_bp": bp,
+        "dia_bp": 80,
+        "glucose": glucose,
+        "cholesterol": 200,
+        "bmi": 25,
+        "heart_rate": 75
+    }
+
+    try:
+        response = requests.post(
+            f"{API_URL}/predict",
+            json=payload
+        )
+
+        result = response.json()
+
         st.subheader("Risk Output")
-        st.metric("Risk Score", 0.62)
-        st.metric("Risk Level", "Medium")
-        st.info("No emergency detected")
+
+        st.metric("Risk Score", result["risk_score"])
+        st.metric("Risk Level", result["risk_level"])
+
+        if result["emergency"]:
+            st.error("🚨 Emergency Risk Detected")
+        else:
+            st.success("No Emergency")
+
+        st.subheader("📋 Clinical Recommendation")
+        st.write(result["recommendation"])
+
+        st.subheader("📊 Model Uncertainty")
+        st.write(result["uncertainty"])
+
+        st.subheader("📈 Future Risk Forecast")
+        st.json(result["future_forecast"])
+
+    except Exception:
+        st.error("Backend not reachable. Please start FastAPI server.")
+
+
 
 # -------------------------
 # Admin View
