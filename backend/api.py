@@ -5,6 +5,13 @@ Skeleton backend without AI dependency
 
 from fastapi import APIRouter
 from pydantic import BaseModel
+import pandas as pd
+
+
+# Import Updated Interfaces
+from model import unified_predict
+from decision import evaluate_risk
+from temporal_model import forecast_future_risk
 
 router = APIRouter()
 
@@ -21,26 +28,42 @@ class PredictionInput(BaseModel):
     bmi: float
     heart_rate: float
 
-# -------------------------
-# Dummy Predict Endpoint
-# -------------------------
+# =========================
+# Real Prediction Endpoint
+# =========================
 @router.post("/predict")
-def predict_dummy(data: PredictionInput):
-    return {
-        "risk_score": 0.5,
-        "uncertainty": 0.1,
-        "risk_level": "Medium",
-        "emergency": False,
-        "recommended_hospitals": ["District Hospital"]
-    }
+def predict_risk(data: PredictionInput):
 
-# -------------------------
-# Dummy Timeline
-# -------------------------
+    # Convert request to DataFrame
+    input_df = pd.DataFrame([data.dict()])
+
+    # Step A – AI Prediction
+    risk_score, uncertainty = unified_predict(input_df)
+
+    # Step B – Clinical Decision Logic
+    decision_output = evaluate_risk(
+        risk_score=risk_score,
+        uncertainty=uncertainty
+    )
+
+    # Attach numerical outputs
+    decision_output["risk_score"] = round(risk_score, 3)
+    decision_output["uncertainty"] = round(uncertainty, 3)
+
+    # Step C – Temporal Forecast
+    decision_output["future_forecast"] = forecast_future_risk()
+
+    return decision_output
+
+
+# =========================
+# Timeline Endpoint
+# =========================
 @router.get("/timeline/{patient_id}")
 def timeline(patient_id: int):
     return [
-        {"month": 1, "risk_score": 0.3},
-        {"month": 2, "risk_score": 0.4},
-        {"month": 3, "risk_score": 0.5}
+        {"month": 1, "risk_score": 0.45},
+        {"month": 2, "risk_score": 0.60},
+        {"month": 3, "risk_score": 0.72},
+        {"month": 4, "risk_score": 0.81}
     ]
