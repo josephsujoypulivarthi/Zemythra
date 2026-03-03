@@ -38,46 +38,51 @@ if role == "User":
 
     if submit:
         payload = {
-        "age": age,
+        "age": int(age),
         "gender": 1,
-        "sys_bp": bp,
-        "dia_bp": 80,
-        "glucose": glucose,
-        "cholesterol": 200,
-        "bmi": 25,
-        "heart_rate": 75
+        "sys_bp": float(bp),
+        "dia_bp": 80.0,
+        "glucose": float(glucose),
+        "cholesterol": 200.0,
+        "bmi": 25.0,
+        "heart_rate": 75.0
     }
-
-    try:
-        response = requests.post(
-            f"{API_URL}/predict",
-            json=payload
-        )
-
-        result = response.json()
-
-        st.subheader("Risk Output")
-
-        st.metric("Risk Score", result["risk_score"])
-        st.metric("Risk Level", result["risk_level"])
-
-        if result["emergency"]:
-            st.error("🚨 Emergency Risk Detected")
-        else:
-            st.success("No Emergency")
-
-        st.subheader("📋 Clinical Recommendation")
-        st.write(result["recommendation"])
-
-        st.subheader("📊 Model Uncertainty")
-        st.write(result["uncertainty"])
-
-        st.subheader("📈 Future Risk Forecast")
-        st.json(result["future_forecast"])
-
-    except Exception:
-        st.error("Backend not reachable. Please start FastAPI server.")
-
+    
+        try:
+            response = requests.post(
+                f"{API_URL}/predict",
+                json = payload,
+                timeout=5
+            )
+    
+            if response.status_code == 200:
+                result = response.json()
+    
+                st.subheader("Risk Output")
+        
+                st.metric("Risk Score", result["risk_score"])
+                st.metric("Risk Level", result["risk_level"])
+        
+                if result["emergency"]:
+                    st.error("🚨 Emergency Risk Detected")
+                else:
+                    st.success("No Emergency")
+        
+                st.subheader("📋 Hospital Recommendation")
+                st.write(result["recommendation"])
+        
+                st.subheader("📊 Model Uncertainty")
+                st.write(result["uncertainty"])
+        
+                st.subheader("📈 Future Risk Forecast")
+                st.json(result["future_forecast"])
+    
+            else:
+                st.error(f"Backend returned error: {response.status_code}")
+                st.write(response.text)
+    
+        except requests.exceptions.ConnectionError:
+            st.error("Cannot connect to backend server.")
 
 
 # -------------------------
@@ -100,3 +105,5 @@ if role == "Admin":
 
         df = pd.DataFrame(dummy_data)
         st.line_chart(df.set_index("month"))
+
+       

@@ -78,8 +78,24 @@ def explain(model, X_sample):
     explainer = shap.Explainer(model.named_steps["clf"], X_sample)
     return explainer(X_sample)
 
+
+
+# =========================
+# UNIFIED AI INTERFACE
+# =========================
+
+def unified_predict(input_df):
+    """
+    Single entry point for risk prediction + uncertainty
+    Used by backend API
+    """
+    model = load_model()
+    risk, uncertainty = predict_with_uncertainty(model, input_df)
+    return float(risk[0]), float(uncertainty[0])
+
 # -------------------------
 # Manual Test
 # -------------------------
 if __name__ == "__main__":
     model = train_model()
+    

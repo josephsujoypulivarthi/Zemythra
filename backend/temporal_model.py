@@ -6,7 +6,6 @@ Time-Series Progression, Drift Detection & Forecast Interface
 
 import pandas as pd
 import numpy as np
-import tensorflow as tf
 from scipy.stats import ks_2samp
 
 
@@ -63,6 +62,7 @@ def build_lstm(input_shape):
     """
     Creates temporal progression model
     """
+    import tensorflow as tf
 
     model = tf.keras.Sequential([
         tf.keras.layers.Input(shape=input_shape),

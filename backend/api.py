@@ -9,9 +9,9 @@ import pandas as pd
 
 
 # Import Updated Interfaces
-from model import unified_predict
-from decision import evaluate_risk
-from temporal_model import forecast_future_risk
+from .model import unified_predict
+from .decision import evaluate_risk
+from .temporal_model import forecast_future_risk
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ class PredictionInput(BaseModel):
 def predict_risk(data: PredictionInput):
 
     # Convert request to DataFrame
-    input_df = pd.DataFrame([data.dict()])
+    input_df = pd.DataFrame([data.model_dump()])
 
     # Step A – AI Prediction
     risk_score, uncertainty = unified_predict(input_df)
