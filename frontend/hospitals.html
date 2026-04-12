@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Hospital Explorer</title>
+
+
+ <!-- Leaflet -->
+ <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+ <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+ <!-- Tailwind -->
+ <script src="https://cdn.tailwindcss.com"></script>
+
+
+ <style>
+   body {
+     background: radial-gradient(circle at top, #0f172a, #020617);
+   }
+ </style>
+</head>
+
+
+<body class="text-white">
+
+
+<!-- HEADER -->
+<div class="p-4 flex justify-between items-center border-b border-white/10">
+ <h1 class="text-xl font-semibold">Hospital Intelligence</h1>
+ <span class="text-sm text-gray-400">AI-powered discovery</span>
+</div>
+
+
+<div class="flex h-[calc(100vh-64px)]">
+
+
+ <!-- LEFT PANEL -->
+ <div class="w-[420px] overflow-y-auto p-4 space-y-4">
+
+
+   <div id="hospitalList"></div>
+
+
+ </div>
+
+
+ <!-- MAP -->
+ <div id="map" class="flex-1 rounded-l-3xl overflow-hidden"></div>
+
+
+</div>
+
+
+<script>
+
+
+let map;
+let userLat, userLon;
+
+
+// ICONS
+const userIcon = L.icon({
+ iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+ iconSize: [40, 40]
+});
+
+
+const hospitalIcon = L.icon({
+ iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+ iconSize: [35, 35]
+});
+
+
+// INIT
+window.onload = init;
+
+
+async function init() {
+
+
+ navigator.geolocation.getCurrentPosition(async (pos) => {
+
+
+   userLat = pos.coords.latitude;
+   userLon = pos.coords.longitude;
+
+
+   map = L.map('map').setView([userLat, userLon], 14);
+
+
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+     .addTo(map);
+
+
+   L.marker([userLat, userLon], {icon: userIcon})
+     .addTo(map)
+     .bindPopup("You");
+
+
+   const hospitals = await getHospitals(userLat, userLon);
+
+
+   renderHospitals(hospitals);
+
+
+ });
+}
+
+
+// FETCH
+async function getHospitals(lat, lon) {
+
+
+ const query = `
+ [out:json];
+ node["amenity"="hospital"](around:4000, ${lat}, ${lon});
+ out;
+ `;
+
+
+ const res = await fetch("https://overpass-api.de/api/interpreter", {
+   method: "POST",
+   body: query
+ });
+
+
+ const data = await res.json();
+
+
+ return data.elements.map(h => ({
+   name: h.tags.name || "Hospital",
+   lat: h.lat,
+   lon: h.lon,
+   rating: (Math.random()*2+3).toFixed(1),
+   specialization: getSpecialization(),
+   doctor: getDoctor(),
+   phone: "+91 9876543210"
+ }));
+}
+
+
+// RANDOM SPECIALIZATION
+function getSpecialization() {
+ const specs = ["Cardiology", "Emergency Care", "Neurology", "Orthopedics"];
+ return specs[Math.floor(Math.random()*specs.length)];
+}
+
+
+// RANDOM DOCTOR
+function getDoctor() {
+ const docs = ["Dr. Sharma", "Dr. Reddy", "Dr. Mehta", "Dr. Khan"];
+ return docs[Math.floor(Math.random()*docs.length)];
+}
+
+
+// DISTANCE
+function distance(lat1, lon1, lat2, lon2) {
+
+
+ const R = 6371;
+ const dLat = (lat2-lat1)*Math.PI/180;
+ const dLon = (lon2-lon1)*Math.PI/180;
+
+
+ const a =
+   Math.sin(dLat/2)**2 +
+   Math.cos(lat1*Math.PI/180) *
+   Math.cos(lat2*Math.PI/180) *
+   Math.sin(dLon/2)**2;
+
+
+ return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(2);
+}
+
+
+// RENDER
+function renderHospitals(hospitals) {
+
+
+ const container = document.getElementById("hospitalList");
+ container.innerHTML = "";
+
+
+ hospitals.forEach(h => {
+
+
+   const dist = distance(userLat, userLon, h.lat, h.lon);
+
+
+   // MAP
+   const marker = L.marker([h.lat, h.lon], {icon: hospitalIcon})
+     .addTo(map)
+     .bindPopup(h.name);
+
+
+   // CARD
+   const card = document.createElement("div");
+
+
+   card.className = `
+     p-5 rounded-2xl bg-white/5 backdrop-blur
+     border border-white/10 hover:border-blue-500
+     transition cursor-pointer
+   `;
+
+
+   card.innerHTML = `
+     <div class="flex justify-between items-center">
+       <h3 class="text-lg font-semibold">${h.name}</h3>
+       <span class="text-blue-400">${dist} km</span>
+     </div>
+
+
+     <div class="mt-2 text-sm text-gray-400">
+       ${h.specialization}
+     </div>
+
+
+     <div class="mt-2 flex justify-between text-sm">
+       <span>⭐ ${h.rating}</span>
+       <span>${h.doctor}</span>
+     </div>
+
+
+     <div class="mt-4 flex justify-between items-center">
+
+
+       <button onclick="call('${h.phone}')"
+         class="px-4 py-2 bg-blue-600 rounded-lg text-sm">
+         Contact
+       </button>
+
+
+       <button onclick="focusMap(${h.lat}, ${h.lon})"
+         class="text-sm text-gray-400">
+         View on map
+       </button>
+
+
+     </div>
+   `;
+
+
+   container.appendChild(card);
+
+
+ });
+}
+
+
+// MAP FOCUS
+function focusMap(lat, lon) {
+ map.setView([lat, lon], 16);
+}
+
+
+// CALL
+function call(num) {
+ window.location.href = "tel:" + num;
+}
+
+
+</script>
+
+
+</body>
+</html>
+

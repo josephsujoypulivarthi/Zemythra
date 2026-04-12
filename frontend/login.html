@@ -1,5 +1,3 @@
-<!-- # Login Page -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +14,6 @@
       padding: 0;
     }
 
-
     html, body {
       height: 100%;
       width: 100%;
@@ -25,7 +22,6 @@
       overflow: hidden;
     }
 
-
     body {
       font-family: 'Outfit', sans-serif;
       background-image: url('https://static.vecteezy.com/system/resources/thumbnails/039/567/315/small_2x/ai-generated-perspective-vision-and-artificial-intelligence-in-healthcare-showcasing-the-analysis-of-x-rays-or-diagnosis-of-diseases-with-unprecedented-accuracy-photo.jpeg');
@@ -33,34 +29,22 @@
       background-position: center;
       background-attachment: fixed;
       background-repeat: no-repeat;
-      font-family: 'Outfit', sans-serif;
       color: #1f2937;
       margin: 0;
       padding: 0;
       overflow: hidden;
     }
 
-
-
-
-
-
-    /* Add dark overlay for better text contrast */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(68, 70, 78, 0.4);
-  z-index: -1;
-}
-
-
-
-
-
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(68, 70, 78, 0.4);
+      z-index: -1;
+    }
 
     .glass {
       background: rgba(255,255,255,0.74);
@@ -70,13 +54,11 @@ body::before {
       position: relative;
     }
 
-
     .btn-grad {
       background: linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef);
       color: white;
       box-shadow: 0 16px 34px rgba(91,109,248,0.25);
     }
-
 
     .field {
       border: 2px solid #e2e8f0;
@@ -84,13 +66,11 @@ body::before {
       transition: all .2s ease;
     }
 
-
     .field:focus {
       outline: none;
       border-color: #818cf8;
       box-shadow: 0 0 0 6px rgba(99,102,241,0.12);
     }
-
 
     .emoji-float {
       position: absolute;
@@ -100,7 +80,6 @@ body::before {
       z-index: 1;
     }
 
-
     @keyframes float {
       from { transform: translateY(40px) rotate(0deg); opacity: 0; }
       10% { opacity: .15; }
@@ -108,16 +87,13 @@ body::before {
       to { transform: translateY(-120vh) rotate(25deg); opacity: 0; }
     }
 
-
     .tab-btn.active {
       background: linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef);
       color: white;
       box-shadow: 0 14px 30px rgba(91,109,248,0.22);
     }
 
-
     .role-btn { transition: all .2s ease; }
-
 
     .container-main {
       height: 100%;
@@ -130,6 +106,31 @@ body::before {
       overflow: hidden;
       margin-top: 2rem;
     }
+
+    .error-message {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .success-message {
+      background: #dcfce7;
+      color: #166534;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #5b6df8;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -140,20 +141,19 @@ body::before {
   <span class="emoji-float" style="left:66%; bottom:-15%; animation-delay:5s;">🧬</span>
   <span class="emoji-float" style="left:82%; bottom:-9%; animation-delay:3s;">💙</span>
 
-
 <div class="container-main">
-    <!-- Left Panel - Text Only -->
+    <!-- Left Panel -->
   <div class="flex flex-col justify-center items-start max-w-lg">
   <h3 class="text-xl md:text-2xl lg:text-3xl font-semibold text-indigo-700 mb-6 flex items-center gap-2 px-4 py-2 rounded-xl" style="background: rgba(255, 255, 255, 0.979);">
     <span>✨</span>
     <span>Welcome to Zemythra</span>
   </h3>
  
-  <h1 class="text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight mb-4 text-slate-900"  style="color: rgba(230, 227, 231, 0.966);"  >
+  <h1 class="text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight mb-4 text-slate-900" style="color: rgba(230, 227, 231, 0.966);">
     Secure care access
   </h1>
  
-  <p class="text-lg md:text-xl text-slate-600 leading-8 mb-8 max-w-[350px]"    style="color: rgba(253, 252, 252, 0.89);">
+  <p class="text-lg md:text-xl text-slate-600 leading-8 mb-8 max-w-[350px]" style="color: rgba(253, 252, 252, 0.89);">
     Sign in or create an account to enter Zemythra.
   </p>
  
@@ -164,11 +164,8 @@ body::before {
   </div>
  </div>
 
-
-
-
     <!-- Right Panel - Login Form -->
-    <div class="glass rounded-3xl p-6 md:p-8 h-auto max-h-[90vh] overflow-y-auto flex-shrink-0 w-full max-w-md shadow-lg  ml-20 lg:ml-80">
+    <div class="glass rounded-3xl p-6 md:p-8 h-auto max-h-[90vh] overflow-y-auto flex-shrink-0 w-full max-w-md shadow-lg ml-20 lg:ml-80">
       <div class="flex items-center justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Account Access</h2>
@@ -177,43 +174,44 @@ body::before {
         <div class="text-3xl md:text-4xl flex-shrink-0">🏥</div>
       </div>
 
+      <div id="errorMessage" class="error-message"></div>
+      <div id="successMessage" class="success-message"></div>
 
       <div class="grid grid-cols-2 gap-3 mb-6">
         <button id="loginTab" class="tab-btn active rounded-2xl px-4 py-3 font-semibold transition-all text-sm md:text-base">Login</button>
         <button id="registerTab" class="tab-btn rounded-2xl px-4 py-3 font-semibold transition-all text-sm md:text-base" style="background: rgba(255,255,255,0.5); color: #1f2937;">Create Account</button>
       </div>
 
-
       <div class="grid grid-cols-2 gap-3 mb-6">
-        <button id="userRole" class="role-btn rounded-2xl px-4 py-3 font-semibold btn-grad text-sm md:text-base">User</button>
-        <button id="adminRole" class="role-btn rounded-2xl px-4 py-3 font-semibold transition-all text-sm md:text-base" style="background: rgba(255,255,255,0.5); color: #1f2937; border: 1px solid #e2e8f0;">Admin</button>
+        <button id="userRole" class="role-btn rounded-2xl px-4 py-3 font-semibold btn-grad text-sm md:text-base" type="button">User</button>
+        <button id="adminRole" class="role-btn rounded-2xl px-4 py-3 font-semibold transition-all text-sm md:text-base" type="button" style="background: rgba(255,255,255,0.5); color: #1f2937; border: 1px solid #e2e8f0;">Admin</button>
       </div>
-
 
       <form id="authForm" class="space-y-4">
         <div id="nameField" class="hidden">
           <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-2">Full name</label>
-          <input type="text" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your full name">
+          <input id="nameInput" type="text" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your full name">
         </div>
 
+        <div>
+          <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-2">Username</label>
+          <input id="usernameInput" type="text" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your username" required>
+        </div>
 
         <div>
           <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-2">Email address</label>
-          <input type="email" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your email">
+          <input id="emailInput" type="email" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your email">
         </div>
-
 
         <div>
           <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-2">Password</label>
-          <input type="password" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your password">
+          <input id="passwordInput" type="password" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Enter your password" required>
         </div>
-
 
         <div id="confirmField" class="hidden">
           <label class="block text-xs md:text-sm font-semibold text-slate-700 mb-2">Confirm password</label>
-          <input type="password" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Confirm your password">
+          <input id="confirmInput" type="password" class="field w-full rounded-2xl px-4 py-3 text-sm" placeholder="Confirm your password">
         </div>
-
 
         <div class="flex items-center justify-between text-xs md:text-sm text-slate-500 pt-2">
           <label class="flex items-center gap-2">
@@ -223,19 +221,26 @@ body::before {
           <a href="#" class="text-indigo-600 font-medium">Forgot password?</a>
         </div>
 
+        <div class="loading" id="loading">
+          <span>Processing...</span>
+        </div>
 
         <button type="submit" id="submitBtn" class="btn-grad w-full rounded-2xl px-4 py-3 text-sm md:text-base font-semibold mt-4">Login as User</button>
       </form>
 
-
       <div class="mt-5 rounded-2xl p-4 text-xs md:text-sm text-slate-600 leading-6" style="background: rgba(255,255,255,0.3);">
-        Demo only: connect your own backend logic later for authentication, role validation, and redirects to User, Admin, Chatbot, and Hospital Finder modules.
+        Connected to Zemythra backend. Your credentials are securely hashed and verified.
       </div>
     </div>
   </div>
 
-
   <script>
+    // API Configuration
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const API_LOGIN_URL = `${API_BASE_URL}/login`;
+    const API_REGISTER_URL = `${API_BASE_URL}/register`;
+
+    // DOM Elements
     const loginTab = document.getElementById('loginTab');
     const registerTab = document.getElementById('registerTab');
     const userRole = document.getElementById('userRole');
@@ -243,11 +248,21 @@ body::before {
     const nameField = document.getElementById('nameField');
     const confirmField = document.getElementById('confirmField');
     const submitBtn = document.getElementById('submitBtn');
+    const authForm = document.getElementById('authForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const loading = document.getElementById('loading');
 
+    // Form Inputs
+    const nameInput = document.getElementById('nameInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const confirmInput = document.getElementById('confirmInput');
 
+    // State
     let mode = 'login';
-    let role = 'User';
-
+    let role = 'user';
 
     function updateUI() {
       loginTab.classList.toggle('active', mode === 'login');
@@ -265,8 +280,7 @@ body::before {
         registerTab.style.color = '#1f2937';
       }
 
-
-      if (role === 'User') {
+      if (role === 'user') {
         userRole.style.background = '';
         userRole.style.color = '';
         userRole.classList.add('btn-grad');
@@ -282,43 +296,165 @@ body::before {
         userRole.classList.remove('btn-grad');
       }
 
-
       nameField.classList.toggle('hidden', mode !== 'register');
       confirmField.classList.toggle('hidden', mode !== 'register');
-      submitBtn.textContent = mode === 'login' ? `Login as ${role}` : `Create ${role} Account`;
+      submitBtn.textContent = mode === 'login' ? `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}` : `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`;
     }
 
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+    }
 
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function hideMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+
+    async function handleLogin(username, password) {
+      try {
+        loading.style.display = 'block';
+        hideMessages();
+
+        const response = await fetch(API_LOGIN_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store token in localStorage
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('user_role', data.role);
+          localStorage.setItem('username', data.username);
+
+          showSuccess(`Login successful! Redirecting as ${data.role}...`);
+          
+          // Redirect to homepage after 2 seconds
+          setTimeout(() => {
+            window.location.href = '/frontend/homepage.html';
+          }, 2000);
+        } else {
+          showError(data.detail || 'Login failed. Please try again.');
+        }
+      } catch (error) {
+        showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
+        console.error('Error:', error);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    async function handleRegister(username, email, password, confirmPassword) {
+      if (password !== confirmPassword) {
+        showError('Passwords do not match!');
+        return;
+      }
+
+      try {
+        loading.style.display = 'block';
+        hideMessages();
+
+        const response = await fetch(API_REGISTER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password,
+            role: role
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess('Account created successfully! You can now login.');
+          
+          // Clear form and switch to login
+          authForm.reset();
+          mode = 'login';
+          updateUI();
+          
+          // Fill username for quick login
+          usernameInput.value = username;
+        } else {
+          showError(data.detail || 'Registration failed. Username may already exist.');
+        }
+      } catch (error) {
+        showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
+        console.error('Error:', error);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    // Event Listeners
     loginTab.addEventListener('click', () => {
       mode = 'login';
       updateUI();
+      hideMessages();
     });
-
 
     registerTab.addEventListener('click', () => {
       mode = 'register';
       updateUI();
+      hideMessages();
     });
-
 
     userRole.addEventListener('click', () => {
-      role = 'User';
+      role = 'user';
       updateUI();
     });
-
 
     adminRole.addEventListener('click', () => {
-      role = 'Admin';
+      role = 'admin';
       updateUI();
     });
 
-
-    document.getElementById('authForm').addEventListener('submit', (e) => {
+    authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      alert(`${mode === 'login' ? 'Login' : 'Registration'} flow for ${role} will be connected later.`);
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!username || !password) {
+        showError('Please enter username and password');
+        return;
+      }
+
+      if (mode === 'login') {
+        await handleLogin(username, password);
+      } else {
+        const email = emailInput.value.trim();
+        const confirmPassword = confirmInput.value;
+
+        if (!email || !confirmPassword) {
+          showError('Please fill in all fields');
+          return;
+        }
+
+        await handleRegister(username, email, password, confirmPassword);
+      }
     });
 
-
+    // Initialize UI
     updateUI();
   </script>
 </body>

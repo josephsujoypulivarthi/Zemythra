@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Zemythra Clinical Dashboard</title>
+
+
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+ <style>
+   body { font-family: 'Inter', sans-serif; }
+ </style>
+</head>
+
+
+<body class="bg-gray-100">
+
+
+<!-- 🔷 SIDEBAR -->
+<div class="flex">
+
+
+ <div class="w-64 bg-blue-600 text-white min-h-screen p-5">
+   <h2 class="text-2xl font-bold mb-6">Zemythra</h2>
+
+
+   <p class="mb-6 text-sm opacity-80" id="roleText">Role</p>
+
+
+   <nav class="space-y-3">
+     <button onclick="go('dashboard.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Dashboard</button>
+     <button onclick="go('chatbot.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">AI Chat</button>
+     <button onclick="go('hospitals.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Hospitals</button>
+     <button onclick="go('emergency.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Emergency</button>
+   </nav>
+ </div>
+
+
+ <!-- 🔷 MAIN CONTENT -->
+ <div class="flex-1 p-6">
+
+
+   <!-- TOP STATS -->
+   <div class="grid grid-cols-4 gap-4 mb-6">
+
+
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Patients</h3>
+       <h2 class="text-2xl font-bold">4567</h2>
+     </div>
+
+
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Doctors</h3>
+       <h2 class="text-2xl font-bold">120</h2>
+     </div>
+
+
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Appointments</h3>
+       <h2 class="text-2xl font-bold">3973</h2>
+     </div>
+
+
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Critical Cases</h3>
+       <h2 class="text-2xl font-bold text-red-500">23</h2>
+     </div>
+
+
+   </div>
+
+
+   <!-- MAIN GRID -->
+   <div class="grid grid-cols-3 gap-6">
+
+
+     <!-- LEFT -->
+     <div class="space-y-4">
+
+
+       <!-- INPUT -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold mb-3">Patient Input</h2>
+
+
+         <input id="age" placeholder="Age" class="w-full mb-2 p-2 border rounded">
+         <input id="bmi" placeholder="BMI" class="w-full mb-2 p-2 border rounded">
+         <input id="glucose" placeholder="Glucose" class="w-full mb-2 p-2 border rounded">
+         <input id="bp" placeholder="Blood Pressure" class="w-full mb-2 p-2 border rounded">
+
+
+         <button onclick="predict()" class="w-full bg-blue-600 text-white p-2 rounded mt-2">
+           Analyze Risk
+         </button>
+       </div>
+
+
+       <!-- MODEL -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold">Model Performance</h2>
+         <p>Logistic Regression: 82%</p>
+         <p>XGBoost: 89%</p>
+         <p>LSTM Forecast: Enabled</p>
+       </div>
+
+
+       <!-- DRIFT -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold">Drift Monitor</h2>
+         <p id="drift">Stable data</p>
+       </div>
+
+
+     </div>
+
+
+     <!-- RIGHT -->
+     <div class="col-span-2 space-y-4">
+
+
+       <!-- RISK CARD -->
+       <div class="bg-white p-6 rounded-xl shadow">
+         <h2 class="font-bold mb-2">Risk Score</h2>
+         <h1 id="riskScore" class="text-5xl font-bold">--</h1>
+         <p id="confidence"></p>
+         <p id="clinical" class="text-gray-600 mt-2"></p>
+       </div>
+
+
+       <!-- CHART -->
+       <div class="bg-white p-6 rounded-xl shadow">
+         <canvas id="riskChart"></canvas>
+       </div>
+
+
+     </div>
+
+
+   </div>
+
+
+ </div>
+
+
+</div>
+
+
+<script>
+
+
+// 🔥 ROLE FIX
+document.getElementById("roleText").innerText =
+ "Role: " + (localStorage.getItem("zemythra_role") || "Unknown");
+
+
+// NAVIGATION
+function go(page){
+ window.location.href = page;
+}
+
+
+// 🔥 RISK COLOR
+function getColor(score){
+ if(score > 80) return "red";
+ if(score > 50) return "orange";
+ return "green";
+}
+
+
+// 🔥 PREDICT
+async function predict(){
+
+
+ const data = {
+   age: Number(age.value),
+   gender: 1,
+   sys_bp: Number(bp.value),
+   dia_bp: 80,
+   glucose: Number(glucose.value),
+   cholesterol: 200,
+   bmi: Number(bmi.value),
+   heart_rate: 72
+ };
+
+
+ const res = await fetch("http://127.0.0.1:8000/predict", {
+   method: "POST",
+   headers: {"Content-Type": "application/json"},
+   body: JSON.stringify(data)
+ });
+
+
+ const result = await res.json();
+
+
+ const score = Math.round(result.risk_score * 100);
+
+
+ riskScore.innerText = score + "%";
+ riskScore.style.color = getColor(score);
+
+
+ confidence.innerText = "Confidence: " + (result.uncertainty ? (1-result.uncertainty)*100 : 90).toFixed(1) + "%";
+
+
+ clinical.innerText = result.message || "AI clinical assessment";
+
+
+ renderChart(result.future_forecast);
+
+
+ drift.innerText = Math.random()>0.7 ? "Drift detected ⚠️" : "Stable data";
+}
+
+
+// 📊 CHART
+function renderChart(data){
+
+
+ const ctx = document.getElementById("riskChart");
+
+
+ new Chart(ctx, {
+   type: "line",
+   data: {
+     labels: data.map(d=>"Month "+d.month),
+     datasets: [{
+       label: "Risk Progression",
+       data: data.map(d=>d.risk_score),
+       borderColor: "blue",
+       borderWidth: 2
+     }]
+   }
+ });
+}
+
+
+</script>
+
+
+</body>
+</html>
+

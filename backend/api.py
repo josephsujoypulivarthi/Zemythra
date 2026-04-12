@@ -4,7 +4,7 @@ Skeleton backend without AI dependency
 """
 # Updated api.py 
 
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status  
 from fastapi.responses import StreamingResponse
 from typing import Optional
 import pandas as pd
@@ -12,8 +12,7 @@ import random
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
-from backend.auth import authenticate_user, create_token
-from fastapi import Depends
+from backend.auth import authenticate_user, create_token, load_users
 
 
 from backend.chat_service import (
@@ -343,25 +342,73 @@ def generate_report(data: ReportInput):
 
 
 class LoginInput(BaseModel):
-   username: str
-   password: str
+    """Login request model"""
+    username: str
+    password: str
+
+
+class RegisterInput(BaseModel):
+    """Registration request model"""
+    username: str
+    password: str
+    email: str
+    role: str = "user"
 
 
 @router.post("/login")
 def login(data: LoginInput):
+    """
+    Login endpoint - verifies username/password and returns token
+    """
+    from backend.auth import load_users
+    
+    # Authenticate user
+    if not authenticate_user(data.username, data.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+    
+    # Get user data for token
+    users = load_users()
+    user = users.get(data.username, {})
+    
+    # Create JWT token
+    token = create_token({"sub": data.username, "role": user.get("role", "user")})
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": user.get("role", "user"),
+        "username": data.username,
+        "success": True
+    }
 
 
-   user = authenticate_user(data.username, data.password)
-
-
-   if not user:
-       return {"error": "Invalid credentials"}
-
-
-   token = create_token(user)
-
-
-   return {
-       "access_token": token,
-       "role": user["role"]
-   }
+@router.post("/register")
+def register(data: RegisterInput):
+    """
+    Register endpoint - creates new user with hashed password
+    """
+    from backend.auth import create_user
+    
+    # Try to create user
+    success = create_user(
+        username=data.username,
+        password=data.password,
+        role=data.role,
+        email=data.email
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists"
+        )
+    
+    return {
+        "success": True,
+        "message": f"User {data.username} created successfully",
+        "username": data.username,
+        "role": data.role
+    }

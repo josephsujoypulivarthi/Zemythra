@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Emergency Tracking</title>
+
+
+ <!-- Leaflet -->
+ <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+ <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+ <!-- Tailwind -->
+ <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+
+<body class="bg-gray-100">
+
+
+<!-- HEADER -->
+<div class="flex justify-between items-center p-4 bg-white shadow">
+ <h1 class="text-xl font-semibold">Live Emergency Tracking</h1>
+ <div class="text-gray-500">AI Emergency System</div>
+</div>
+
+
+<div class="flex h-[calc(100vh-64px)]">
+
+
+ <!-- MAP -->
+ <div id="map" class="flex-1"></div>
+
+
+ <!-- RIGHT PANEL -->
+ <div class="w-[360px] bg-white p-6 shadow-lg space-y-6">
+
+
+   <h2 class="text-lg font-semibold">Emergency Status</h2>
+
+
+   <!-- STATUS -->
+   <div class="space-y-3 text-sm">
+     <div class="p-3 border rounded bg-green-50">Emergency detected</div>
+     <div class="p-3 border rounded bg-blue-50">Ambulance dispatched</div>
+     <div class="p-3 border rounded">Reaching patient</div>
+   </div>
+
+
+   <!-- ETA -->
+   <div id="etaBox" class="p-4 bg-black text-white rounded text-center text-lg font-bold">
+     ETA: Calculating...
+   </div>
+
+
+   <!-- DOCTOR -->
+   <div id="doctor" class="p-4 bg-gray-100 rounded"></div>
+
+
+   <!-- INFO -->
+   <div id="info" class="p-4 bg-gray-100 rounded"></div>
+
+
+   <!-- OPTIONAL CALL (not forced) -->
+   <button onclick="callHospital()"
+     class="w-full py-3 bg-red-500 text-white rounded-lg">
+     Contact Hospital (Optional)
+   </button>
+
+
+ </div>
+
+
+</div>
+
+
+<script>
+
+
+let map, ambulanceMarker;
+
+
+// Icons (clean)
+const ambulanceIcon = L.icon({
+ iconUrl: "https://cdn-icons-png.flaticon.com/512/2966/2966481.png",
+ iconSize: [40, 40]
+});
+
+
+const userIcon = L.icon({
+ iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+ iconSize: [40, 40]
+});
+
+
+const hospitalIcon = L.icon({
+ iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+ iconSize: [40, 40]
+});
+
+
+// AUTO START
+window.onload = startEmergency;
+
+
+// MAIN FLOW (NO USER INPUT REQUIRED)
+async function startEmergency() {
+
+
+ navigator.geolocation.getCurrentPosition(async (pos) => {
+
+
+   const userLat = pos.coords.latitude;
+   const userLon = pos.coords.longitude;
+
+
+   map = L.map('map').setView([userLat, userLon], 14);
+
+
+   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+     .addTo(map);
+
+
+   // USER (GREEN)
+   L.marker([userLat, userLon], {icon: userIcon})
+     .addTo(map)
+     .bindPopup("Your Location");
+
+
+   // GET REAL HOSPITALS
+   const hospitals = await getNearbyHospitals(userLat, userLon);
+   const best = hospitals[0];
+
+
+   // HOSPITAL (RED)
+   L.marker([best.lat, best.lon], {icon: hospitalIcon})
+     .addTo(map)
+     .bindPopup(best.name);
+
+
+   // ROUTE
+   const route = await getRoute(best.lat, best.lon, userLat, userLon);
+
+
+   L.polyline(route, { color: 'red', weight: 5 }).addTo(map);
+
+
+   // 🚑 AUTOMATIC AMBULANCE DISPATCH
+   simulateAmbulance(route);
+
+
+   // ETA
+   startETA(route.length);
+
+
+   // DOCTOR INFO
+   showDoctor(best.name);
+
+
+   // INFO PANEL
+   document.getElementById("info").innerHTML = `
+     <b>Hospital:</b> ${best.name}<br>
+     Status: Ambulance on the way
+   `;
+
+
+ });
+}
+
+
+// HOSPITAL SEARCH
+async function getNearbyHospitals(lat, lon) {
+
+
+ const query = `
+ [out:json];
+ node["amenity"="hospital"](around:3000, ${lat}, ${lon});
+ out;
+ `;
+
+
+ const res = await fetch("https://overpass-api.de/api/interpreter", {
+   method: "POST",
+   body: query
+ });
+
+
+ const data = await res.json();
+
+
+ return data.elements.map(h => ({
+   name: h.tags.name || "Nearby Hospital",
+   lat: h.lat,
+   lon: h.lon
+ }));
+}
+
+
+// ROUTING
+async function getRoute(startLat, startLon, endLat, endLon) {
+
+
+ const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`;
+
+
+ const res = await fetch(url);
+ const data = await res.json();
+
+
+ return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+}
+
+
+// AMBULANCE MOVEMENT (AUTO)
+function simulateAmbulance(route) {
+
+
+ let i = 0;
+
+
+ ambulanceMarker = L.marker(route[0], { icon: ambulanceIcon }).addTo(map);
+
+
+ const interval = setInterval(() => {
+
+
+   if (i >= route.length) {
+     clearInterval(interval);
+     return;
+   }
+
+
+   ambulanceMarker.setLatLng(route[i]);
+   map.panTo(route[i]);
+
+
+   i++;
+
+
+ }, 150);
+}
+
+
+// ETA
+function startETA(length) {
+
+
+ let time = Math.floor(length / 20);
+
+
+ const box = document.getElementById("etaBox");
+
+
+ const interval = setInterval(() => {
+
+
+   if (time <= 0) {
+     box.innerHTML = "Arrived";
+     clearInterval(interval);
+     return;
+   }
+
+
+   box.innerHTML = "ETA: " + time + " min";
+   time--;
+
+
+ }, 1000);
+}
+
+
+// DOCTOR
+function showDoctor(hospital) {
+
+
+ document.getElementById("doctor").innerHTML = `
+   <b>Doctor Assigned</b><br>
+   Dr. Sharma<br>
+   Department: Emergency Care<br>
+   Hospital: ${hospital}
+ `;
+}
+
+
+// OPTIONAL CALL (NO AUTO POPUP)
+function callHospital() {
+ window.location.href = "tel:+911234567890";
+}
+
+
+</script>
+
+
+</body>
+</html>
