@@ -34,6 +34,33 @@
      <button onclick="go('hospitals.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Hospitals</button>
      <button onclick="go('emergency.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Emergency</button>
    </nav>
+
+
+   <div class="mt-auto pt-6">
+  <button onclick="openLogoutPopup()" class="w-full bg-blue-500 hover:bg-blue-400 text-white py-2 rounded font-semibold">
+    Logout
+  </button>
+</div>
+
+ <div id="logoutModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm">
+    <h3 class="text-xl font-bold text-gray-800 mb-2">Logout Options</h3>
+    <p class="text-gray-600 mb-6">Choose what you want to do next.</p>
+
+    <div class="flex gap-3">
+      <button onclick="goBackToLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">
+        Go Back
+      </button>
+      <button onclick="signOut()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold">
+        Sign Out
+      </button>
+    </div>
+
+    <button onclick="closeLogoutPopup()" class="mt-4 w-full text-gray-500 hover:text-gray-700 text-sm">
+      Cancel
+    </button>
+   </div>
+  </div>
  </div>
 
 
@@ -235,6 +262,26 @@ function renderChart(data){
    }
  });
 }
+
+
+// 🔥 LOGOUT
+ function openLogoutPopup() {
+    document.getElementById("logoutModal").classList.remove("hidden");
+  }
+
+  function closeLogoutPopup() {
+    document.getElementById("logoutModal").classList.add("hidden");
+  }
+
+  function goBackToLogin() {
+    localStorage.removeItem("zemythra_role");
+    window.location.href = "homepage.html";
+  }
+
+  function signOut() {
+    localStorage.removeItem("zemythra_role");
+    window.location.href = "login.html";
+  }
 
 
 </script>

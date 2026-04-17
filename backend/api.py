@@ -6,13 +6,15 @@ Skeleton backend without AI dependency
 
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status  
 from fastapi.responses import StreamingResponse
-from typing import Optional
+from typing import Optional, List
 import pandas as pd
 import random
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
-from backend.auth import authenticate_user, create_token, load_users
+from pydantic import BaseModel
+
+from backend.auth import authenticate_user, create_token, load_users, create_user
 
 
 from backend.chat_service import (
@@ -28,8 +30,6 @@ from .model import unified_predict
 from .decision import evaluate_risk
 from .temporal_model import forecast_future_risk
 
-
-from pydantic import BaseModel
 
 
 router = APIRouter()
@@ -336,68 +336,66 @@ def generate_report(data: ReportInput):
    )
 
 
+
 # ─────────────────────────────────────────────
-# 🔐 LOGIN
-# ─────────────────────────────────────────────
-
-
-class LoginInput(BaseModel):
-    """Login request model"""
-    username: str
-    password: str
-
-
-class RegisterInput(BaseModel):
-    """Registration request model"""
-    username: str
-    password: str
-    email: str
-    role: str = "user"
-
+# 🔐 LOGIN / REGISTER ENDPOINTS - FIXED FOR FORM DATA
+# ─────────────────────────────────────────────────────────
 
 @router.post("/login")
-def login(data: LoginInput):
+def login(
+    username: str = Form(...),
+    password: str = Form(...)
+):
     """
-    Login endpoint - verifies username/password and returns token
-    """
-    from backend.auth import load_users
+    Login endpoint - accepts multipart form data
     
-    # Authenticate user
-    if not authenticate_user(data.username, data.password):
+    CHANGES:
+    - Removed Pydantic LoginInput model
+    - Added Form(...) parameters
+    - Now accepts form data from HTML forms
+    """
+    
+    if not authenticate_user(username, password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
     
-    # Get user data for token
     users = load_users()
-    user = users.get(data.username, {})
+    user = users.get(username, {})
     
-    # Create JWT token
-    token = create_token({"sub": data.username, "role": user.get("role", "user")})
+    token = create_token({"sub": username, "role": user.get("role", "user")})
     
     return {
         "access_token": token,
         "token_type": "bearer",
         "role": user.get("role", "user"),
-        "username": data.username,
+        "username": username,
         "success": True
     }
 
 
 @router.post("/register")
-def register(data: RegisterInput):
+def register(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(...),
+    role: str = Form("user")
+):
     """
-    Register endpoint - creates new user with hashed password
-    """
-    from backend.auth import create_user
+    Register endpoint - accepts multipart form data
     
-    # Try to create user
+    CHANGES:
+    - Removed Pydantic RegisterInput model
+    - Added Form(...) parameters
+    - Now accepts form data from HTML forms
+    """
+    
     success = create_user(
-        username=data.username,
-        password=data.password,
-        role=data.role,
-        email=data.email
+        username=username,
+        password=password,
+        role=role,
+        email=email
     )
     
     if not success:
@@ -408,7 +406,7 @@ def register(data: RegisterInput):
     
     return {
         "success": True,
-        "message": f"User {data.username} created successfully",
-        "username": data.username,
-        "role": data.role
+        "message": f"User {username} created successfully",
+        "username": username,
+        "role": role
     }
