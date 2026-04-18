@@ -9,6 +9,8 @@ from fastapi.responses import StreamingResponse
 from typing import Optional, List
 import pandas as pd
 import random
+import numpy as np
+import joblib
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
@@ -167,102 +169,88 @@ async def chat_stream(
 # ─────────────────────────────────────────────
 # 🏥 PREDICTION API
 # ─────────────────────────────────────────────
-
-
 class PredictionInput(BaseModel):
-   age: int
-   gender: int
-   sys_bp: float
-   dia_bp: float
-   glucose: float
-   cholesterol: float
-   bmi: float
-   heart_rate: float
+    age: int
+    gender: int
+    sys_bp: float
+    dia_bp: float
+    glucose: float
+    cholesterol: float
+    bmi: float
+    heart_rate: float
 
+def forecast_future_risk(current_risk: float = 0.5):
+    """
+    Inverted U-shape: Risk peaks at month 2 (acute phase),
+    then improves with treatment
+    """
+    # Vertex at month 2 (highest point)
+    month_1 = current_risk * 1.10  # Rises to 110%
+    month_2 = current_risk * 1.25  # Peaks at 125% (highest)
+    month_3 = current_risk * 0.90  # Falls to 90%
+    month_4 = current_risk * 0.70  # Falls to 70%
+    
+    return [
+        {"month": 1, "risk_score": float(min(1.0, month_1))},
+        {"month": 2, "risk_score": float(min(1.0, month_2))},
+        {"month": 3, "risk_score": float(min(1.0, month_3))},
+        {"month": 4, "risk_score": float(min(1.0, month_4))}
+    ]
+
+
+def get_clinical_message(risk_score: float):
+    """Convert risk to clinical message"""
+    if risk_score >= 0.8:
+        return "CRITICAL - Immediate intervention required"
+    elif risk_score >= 0.6:
+        return "HIGH - Urgent clinical review needed"
+    elif risk_score >= 0.4:
+        return "MODERATE - Close monitoring required"
+    else:
+        return "LOW - Routine monitoring sufficient"
 
 @router.post("/predict")
 def predict_risk(data: PredictionInput):
-
-
-   input_df = pd.DataFrame([data.model_dump()])
-
-
-   risk_score, uncertainty = unified_predict(input_df)
-
-
-   decision_output = evaluate_risk(
-       risk_score=risk_score,
-       uncertainty=uncertainty
-   )
-
-
-   decision_output["risk_score"] = round(risk_score, 3)
-   decision_output["uncertainty"] = round(uncertainty, 3)
-   decision_output["future_forecast"] = forecast_future_risk()
-
-
-   return decision_output
-
-
-# ─────────────────────────────────────────────
-# 🚑 EMERGENCY
-# ─────────────────────────────────────────────
-
-
-class EmergencyInput(BaseModel):
-   lat: float
-   lon: float
-   symptoms: str
-
-
-@router.post("/emergency-real")
-def emergency_real(data: EmergencyInput):
-
-
-   hospitals = [
-       {"name": "Apollo Hospital", "phone": "+91 4043441066", "department": "Cardiology", "rating": 4.8},
-       {"name": "Care Hospital", "phone": "+91 4061625656", "department": "Emergency", "rating": 4.6},
-   ]
-
-
-   best = sorted(hospitals, key=lambda h: -h["rating"])[0]
-
-
-   return {
-       "status": "critical",
-       "hospital": best["name"],
-       "phone": best["phone"],
-       "department": best["department"],
-       "eta": f"{random.randint(5,12)} minutes",
-       "ambulance": "Dispatched"
-   }
-
-
-# ─────────────────────────────────────────────
-# 🏥 HOSPITALS
-# ─────────────────────────────────────────────
-
-
-class HospitalInput(BaseModel):
-   disease: str
-
-
-@router.post("/hospitals")
-def get_hospitals(data: HospitalInput):
-
-
-   if "heart" in data.disease.lower():
-       return [
-           {"name": "Apollo Hospital", "rating": 4.8, "specialization": "Cardiology"},
-           {"name": "Care Hospital", "rating": 4.6, "specialization": "Heart Care"}
-       ]
-
-
-   return [
-       {"name": "General Hospital", "rating": 4.2, "specialization": "Multi-specialty"}
-   ]
-
-
+    try:
+        # Convert input to DataFrame
+        input_df = pd.DataFrame([data.model_dump()])
+        
+        # Load model
+        model = joblib.load("backend/data/raw/risk_model.pkl")
+        
+        # Get probabilities
+        proba = model.predict_proba(input_df)[0]
+        
+        # Extract values - CONVERT TO PYTHON TYPES (not numpy)
+        risk_score = float(np.max(proba))  # ✓ Convert to float
+        uncertainty = float(np.std(proba))  # ✓ Convert to float
+        
+        # Generate forecast
+        forecast = forecast_future_risk(risk_score)
+        
+        # Get message
+        message = get_clinical_message(risk_score)
+        
+        # ENSURE ALL VALUES ARE PYTHON TYPES
+        response = {
+            "risk_score": float(risk_score),           # ✓ Python float
+            "uncertainty": float(uncertainty),         # ✓ Python float
+            "message": str(message),                   # ✓ Python str
+            "future_forecast": [
+                {
+                    "month": int(item["month"]),       # ✓ Python int
+                    "risk_score": float(item["risk_score"])  # ✓ Python float
+                }
+                for item in forecast
+            ]
+        }
+        
+        return response
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Model file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 # ─────────────────────────────────────────────
 # 📄 PDF REPORT GENERATOR
 # ─────────────────────────────────────────────
