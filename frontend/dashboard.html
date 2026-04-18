@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
  <title>Zemythra Clinical Dashboard</title>
@@ -17,7 +17,7 @@
 <body class="bg-gray-100">
 
 
-<!-- 🔷 SIDEBAR -->
+🔷 SIDEBAR 
 <div class="flex">
 
 
@@ -34,14 +34,41 @@
      <button onclick="go('hospitals.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Hospitals</button>
      <button onclick="go('emergency.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Emergency</button>
    </nav>
+
+
+   <div class="mt-auto pt-6">
+  <button onclick="openLogoutPopup()" class="w-full bg-blue-500 hover:bg-blue-400 text-white py-2 rounded font-semibold">
+    Logout
+  </button>
+</div>
+
+ <div id="logoutModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm">
+    <h3 class="text-xl font-bold text-gray-800 mb-2">Logout Options</h3>
+    <p class="text-gray-600 mb-6">Choose what you want to do next.</p>
+
+    <div class="flex gap-3">
+      <button onclick="goBackToLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">
+        Go Back
+      </button>
+      <button onclick="signOut()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold">
+        Sign Out
+      </button>
+    </div>
+
+    <button onclick="closeLogoutPopup()" class="mt-4 w-full text-gray-500 hover:text-gray-700 text-sm">
+      Cancel
+    </button>
+   </div>
+  </div>
  </div>
 
 
- <!-- 🔷 MAIN CONTENT -->
+ 🔷 MAIN CONTENT 
  <div class="flex-1 p-6">
 
 
-   <!-- TOP STATS -->
+   TOP STATS 
    <div class="grid grid-cols-4 gap-4 mb-6">
 
 
@@ -72,15 +99,15 @@
    </div>
 
 
-   <!-- MAIN GRID -->
+   MAIN GRID -----
    <div class="grid grid-cols-3 gap-6">
 
 
-     <!-- LEFT -->
+     -----LEFT --
      <div class="space-y-4">
 
 
-       <!-- INPUT -->
+       --- INPUT ----
        <div class="bg-white p-4 rounded-xl shadow">
          <h2 class="font-bold mb-3">Patient Input</h2>
 
@@ -97,7 +124,7 @@
        </div>
 
 
-       <!-- MODEL -->
+      ---  MODEL ----
        <div class="bg-white p-4 rounded-xl shadow">
          <h2 class="font-bold">Model Performance</h2>
          <p>Logistic Regression: 82%</p>
@@ -106,7 +133,7 @@
        </div>
 
 
-       <!-- DRIFT -->
+        DRIFT ----
        <div class="bg-white p-4 rounded-xl shadow">
          <h2 class="font-bold">Drift Monitor</h2>
          <p id="drift">Stable data</p>
@@ -116,11 +143,11 @@
      </div>
 
 
-     <!-- RIGHT -->
+      RIGHT 
      <div class="col-span-2 space-y-4">
 
 
-       <!-- RISK CARD -->
+        RISK CARD 
        <div class="bg-white p-6 rounded-xl shadow">
          <h2 class="font-bold mb-2">Risk Score</h2>
          <h1 id="riskScore" class="text-5xl font-bold">--</h1>
@@ -129,7 +156,7 @@
        </div>
 
 
-       <!-- CHART -->
+       CHART 
        <div class="bg-white p-6 rounded-xl shadow">
          <canvas id="riskChart"></canvas>
        </div>
@@ -237,9 +264,334 @@ function renderChart(data){
 }
 
 
+// 🔥 LOGOUT
+ function openLogoutPopup() {
+    document.getElementById("logoutModal").classList.remove("hidden");
+  }
+
+  function closeLogoutPopup() {
+    document.getElementById("logoutModal").classList.add("hidden");
+  }
+
+  function goBackToLogin() {
+    localStorage.removeItem("zemythra_role");
+    window.location.href = "homepage.html";
+  }
+
+  function signOut() {
+    localStorage.removeItem("zemythra_role");
+    window.location.href = "login.html";
+  }
+
+
 </script>
 
 
 </body>
-</html>
+</html>  -->
 
+
+
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Zemythra Clinical Dashboard</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+   body { font-family: 'Inter', sans-serif; }
+ </style>
+</head>
+
+<body class="bg-gray-100">
+
+<!-- 🔷 SIDEBAR -->
+<div class="flex">
+ <div class="w-64 bg-blue-600 text-white min-h-screen p-5">
+   <h2 class="text-2xl font-bold mb-6">Zemythra</h2>
+   <p class="mb-6 text-sm opacity-80" id="roleText">Role: User</p>
+
+   <nav class="space-y-3">
+     <button onclick="go('dashboard.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Dashboard</button>
+     <button onclick="go('chatbot.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">AI Chat</button>
+     <button onclick="go('hospitals.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Hospitals</button>
+     <button onclick="go('emergency.html')" class="block w-full text-left hover:bg-blue-500 p-2 rounded">Emergency</button>
+   </nav>
+
+   <div class="mt-auto pt-6">
+    <button onclick="openLogoutPopup()" class="w-full bg-blue-500 hover:bg-blue-400 text-white py-2 rounded font-semibold">
+      Logout
+    </button>
+   </div>
+
+   <div id="logoutModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm">
+      <h3 class="text-xl font-bold text-gray-800 mb-2">Logout Options</h3>
+      <p class="text-gray-600 mb-6">Choose what you want to do next.</p>
+      <div class="flex gap-3">
+        <button onclick="goBackToLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">Go Back</button>
+        <button onclick="signOut()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold">Sign Out</button>
+      </div>
+      <button onclick="closeLogoutPopup()" class="mt-4 w-full text-gray-500 hover:text-gray-700 text-sm">Cancel</button>
+    </div>
+   </div>
+ </div>
+
+ <!-- 🔷 MAIN CONTENT -->
+ <div class="flex-1 p-6">
+   <!-- TOP STATS -->
+   <div class="grid grid-cols-4 gap-4 mb-6">
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Patients</h3>
+       <h2 class="text-2xl font-bold">4567</h2>
+     </div>
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Doctors</h3>
+       <h2 class="text-2xl font-bold">120</h2>
+     </div>
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Appointments</h3>
+       <h2 class="text-2xl font-bold">3973</h2>
+     </div>
+     <div class="bg-white p-4 rounded-xl shadow">
+       <h3 class="text-gray-500">Critical Cases</h3>
+       <h2 class="text-2xl font-bold text-red-500">23</h2>
+     </div>
+   </div>
+
+   <!-- MAIN GRID -->
+   <div class="grid grid-cols-3 gap-6">
+     <!-- LEFT -->
+     <div class="space-y-4">
+       <!-- INPUT -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold mb-3">Patient Input</h2>
+         <input id="age" placeholder="Age" type="number" class="w-full mb-2 p-2 border rounded" value="55">
+         <input id="bmi" placeholder="BMI" type="number" step="0.1" class="w-full mb-2 p-2 border rounded" value="32.5">
+         <input id="glucose" placeholder="Glucose" type="number" class="w-full mb-2 p-2 border rounded" value="180">
+         <input id="bp" placeholder="Sys BP" type="number" class="w-full mb-2 p-2 border rounded" value="140">
+
+         <button onclick="predict()" class="w-full bg-blue-600 text-white p-2 rounded mt-2 hover:bg-blue-700">
+           Analyze Risk
+         </button>
+       </div>
+
+       <!-- MODEL -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold">Model Performance</h2>
+         <p>Logistic Regression: 82%</p>
+         <p>XGBoost: 89%</p>
+         <p>LSTM Forecast: Enabled</p>
+       </div>
+
+       <!-- DRIFT -->
+       <div class="bg-white p-4 rounded-xl shadow">
+         <h2 class="font-bold">Drift Monitor</h2>
+         <p id="drift">Stable data</p>
+       </div>
+     </div>
+
+     <!-- RIGHT -->
+     <div class="col-span-2 space-y-4">
+       <!-- RISK CARD -->
+       <div class="bg-white p-6 rounded-xl shadow">
+         <h2 class="font-bold mb-2">Risk Score</h2>
+         <h1 id="riskScore" class="text-5xl font-bold text-gray-400">--</h1>
+         <p id="confidence" class="text-gray-600 mt-1">Confidence: --</p>
+         <p id="clinical" class="text-gray-600 mt-2 text-sm">Ready to analyze</p>
+       </div>
+
+       <!-- CHART -->
+       <div class="bg-white p-6 rounded-xl shadow">
+         <h3 class="font-bold mb-4">Risk Progression Forecast</h3>
+         <div class="w-full h-80 bg-gray-50 rounded-lg">
+           <canvas id="riskChart"></canvas>
+         </div>
+       </div>
+
+       <!-- ERROR DISPLAY -->
+       <div id="errorBox" class="hidden bg-red-50 border border-red-200 p-4 rounded-lg">
+         <p class="text-red-700 font-bold">Error:</p>
+         <p id="errorMsg" class="text-red-600 text-sm"></p>
+       </div>
+     </div>
+   </div>
+
+ </div>
+
+</div>
+
+<script>
+
+// 🔥 ROLE FIX
+document.getElementById("roleText").innerText = "Role: " + (localStorage.getItem("zemythra_role") || "Unknown");
+
+// NAVIGATION
+function go(page){
+  window.location.href = page;
+}
+
+// 🔥 RISK COLOR
+function getColor(score){
+  if(score > 80) return "#dc2626";  // Red
+  if(score > 50) return "#f97316";  // Orange
+  return "#16a34a";  // Green
+}
+
+// 🔥 SHOW ERROR
+function showError(msg) {
+  const errorBox = document.getElementById("errorBox");
+  const errorMsg = document.getElementById("errorMsg");
+  errorMsg.innerText = msg;
+  errorBox.classList.remove("hidden");
+  console.error("Dashboard Error:", msg);
+}
+
+function hideError() {
+  document.getElementById("errorBox").classList.add("hidden");
+}
+
+// 🔥 PREDICT
+async function predict(){
+  hideError();
+  
+  try {
+    const data = {
+      age: parseInt(document.getElementById("age").value) || 0,
+      gender: 1,
+      sys_bp: parseFloat(document.getElementById("bp").value) || 0,
+      dia_bp: 80,
+      glucose: parseFloat(document.getElementById("glucose").value) || 0,
+      cholesterol: 200,
+      bmi: parseFloat(document.getElementById("bmi").value) || 0,
+      heart_rate: 72
+    };
+
+    console.log("Sending data:", data);
+
+    const res = await fetch("http://127.0.0.1:8000/predict", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+
+    console.log("Response status:", res.status);
+    const result = await res.json();
+    console.log("Response data:", result);
+
+    if (!res.ok) {
+      throw new Error(result.detail || "API error");
+    }
+
+    // Extract values safely
+    const score = Math.round((result.risk_score || 0) * 100);
+    const conf = ((result.uncertainty !== undefined) ? (1 - result.uncertainty) * 100 : 90).toFixed(1);
+    const msg = result.message || "AI clinical assessment";
+    const forecast = result.future_forecast || [];
+
+    // Update UI
+    document.getElementById("riskScore").innerText = score + "%";
+    document.getElementById("riskScore").style.color = getColor(score);
+    document.getElementById("confidence").innerText = "Confidence: " + conf + "%";
+    document.getElementById("clinical").innerText = msg;
+
+    // Render chart
+    if (forecast.length > 0) {
+      renderChart(forecast);
+    } else {
+      showError("No forecast data received");
+    }
+
+    // Drift monitor
+    document.getElementById("drift").innerText = Math.random() > 0.7 ? "Drift detected ⚠️" : "Stable data ✓";
+
+  } catch (error) {
+    showError(error.message || "Failed to fetch prediction");
+    console.error("Full error:", error);
+  }
+}
+
+// 📊 CHART
+let riskChartInstance = null;
+
+function renderChart(data) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    showError("Invalid chart data");
+    return;
+  }
+
+  const ctx = document.getElementById("riskChart");
+  
+  if (!ctx) {
+    showError("Chart canvas not found");
+    return;
+  }
+
+  // Destroy old chart
+  if (riskChartInstance) {
+    riskChartInstance.destroy();
+  }
+
+  try {
+    riskChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.map(d => "Month " + d.month),
+        datasets: [{
+          label: "Risk Score %",
+          data: data.map(d => (d.risk_score * 100).toFixed(1)),
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#3b82f6",
+          pointRadius: 6,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { suffix: '%' }
+          }
+        }
+      }
+    });
+  } catch (err) {
+    showError("Chart rendering failed: " + err.message);
+  }
+}
+
+// 🔥 LOGOUT
+function openLogoutPopup() {
+  document.getElementById("logoutModal").classList.remove("hidden");
+}
+
+function closeLogoutPopup() {
+  document.getElementById("logoutModal").classList.add("hidden");
+}
+
+function goBackToLogin() {
+  localStorage.removeItem("zemythra_role");
+  window.location.href = "homepage.html";
+}
+
+function signOut() {
+  localStorage.removeItem("zemythra_role");
+  window.location.href = "login.html";
+}
+
+console.log("Dashboard loaded successfully");
+
+</script>
+
+</body>
+</html>

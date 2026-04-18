@@ -6,13 +6,17 @@ Skeleton backend without AI dependency
 
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status  
 from fastapi.responses import StreamingResponse
-from typing import Optional
+from typing import Optional, List
 import pandas as pd
 import random
+import numpy as np
+import joblib
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
-from backend.auth import authenticate_user, create_token, load_users
+from pydantic import BaseModel
+
+from backend.auth import authenticate_user, create_token, load_users, create_user
 
 
 from backend.chat_service import (
@@ -28,8 +32,6 @@ from .model import unified_predict
 from .decision import evaluate_risk
 from .temporal_model import forecast_future_risk
 
-
-from pydantic import BaseModel
 
 
 router = APIRouter()
@@ -167,102 +169,88 @@ async def chat_stream(
 # ─────────────────────────────────────────────
 # 🏥 PREDICTION API
 # ─────────────────────────────────────────────
-
-
 class PredictionInput(BaseModel):
-   age: int
-   gender: int
-   sys_bp: float
-   dia_bp: float
-   glucose: float
-   cholesterol: float
-   bmi: float
-   heart_rate: float
+    age: int
+    gender: int
+    sys_bp: float
+    dia_bp: float
+    glucose: float
+    cholesterol: float
+    bmi: float
+    heart_rate: float
 
+def forecast_future_risk(current_risk: float = 0.5):
+    """
+    Inverted U-shape: Risk peaks at month 2 (acute phase),
+    then improves with treatment
+    """
+    # Vertex at month 2 (highest point)
+    month_1 = current_risk * 1.10  # Rises to 110%
+    month_2 = current_risk * 1.25  # Peaks at 125% (highest)
+    month_3 = current_risk * 0.90  # Falls to 90%
+    month_4 = current_risk * 0.70  # Falls to 70%
+    
+    return [
+        {"month": 1, "risk_score": float(min(1.0, month_1))},
+        {"month": 2, "risk_score": float(min(1.0, month_2))},
+        {"month": 3, "risk_score": float(min(1.0, month_3))},
+        {"month": 4, "risk_score": float(min(1.0, month_4))}
+    ]
+
+
+def get_clinical_message(risk_score: float):
+    """Convert risk to clinical message"""
+    if risk_score >= 0.8:
+        return "CRITICAL - Immediate intervention required"
+    elif risk_score >= 0.6:
+        return "HIGH - Urgent clinical review needed"
+    elif risk_score >= 0.4:
+        return "MODERATE - Close monitoring required"
+    else:
+        return "LOW - Routine monitoring sufficient"
 
 @router.post("/predict")
 def predict_risk(data: PredictionInput):
-
-
-   input_df = pd.DataFrame([data.model_dump()])
-
-
-   risk_score, uncertainty = unified_predict(input_df)
-
-
-   decision_output = evaluate_risk(
-       risk_score=risk_score,
-       uncertainty=uncertainty
-   )
-
-
-   decision_output["risk_score"] = round(risk_score, 3)
-   decision_output["uncertainty"] = round(uncertainty, 3)
-   decision_output["future_forecast"] = forecast_future_risk()
-
-
-   return decision_output
-
-
-# ─────────────────────────────────────────────
-# 🚑 EMERGENCY
-# ─────────────────────────────────────────────
-
-
-class EmergencyInput(BaseModel):
-   lat: float
-   lon: float
-   symptoms: str
-
-
-@router.post("/emergency-real")
-def emergency_real(data: EmergencyInput):
-
-
-   hospitals = [
-       {"name": "Apollo Hospital", "phone": "+91 4043441066", "department": "Cardiology", "rating": 4.8},
-       {"name": "Care Hospital", "phone": "+91 4061625656", "department": "Emergency", "rating": 4.6},
-   ]
-
-
-   best = sorted(hospitals, key=lambda h: -h["rating"])[0]
-
-
-   return {
-       "status": "critical",
-       "hospital": best["name"],
-       "phone": best["phone"],
-       "department": best["department"],
-       "eta": f"{random.randint(5,12)} minutes",
-       "ambulance": "Dispatched"
-   }
-
-
-# ─────────────────────────────────────────────
-# 🏥 HOSPITALS
-# ─────────────────────────────────────────────
-
-
-class HospitalInput(BaseModel):
-   disease: str
-
-
-@router.post("/hospitals")
-def get_hospitals(data: HospitalInput):
-
-
-   if "heart" in data.disease.lower():
-       return [
-           {"name": "Apollo Hospital", "rating": 4.8, "specialization": "Cardiology"},
-           {"name": "Care Hospital", "rating": 4.6, "specialization": "Heart Care"}
-       ]
-
-
-   return [
-       {"name": "General Hospital", "rating": 4.2, "specialization": "Multi-specialty"}
-   ]
-
-
+    try:
+        # Convert input to DataFrame
+        input_df = pd.DataFrame([data.model_dump()])
+        
+        # Load model
+        model = joblib.load("backend/data/raw/risk_model.pkl")
+        
+        # Get probabilities
+        proba = model.predict_proba(input_df)[0]
+        
+        # Extract values - CONVERT TO PYTHON TYPES (not numpy)
+        risk_score = float(np.max(proba))  # ✓ Convert to float
+        uncertainty = float(np.std(proba))  # ✓ Convert to float
+        
+        # Generate forecast
+        forecast = forecast_future_risk(risk_score)
+        
+        # Get message
+        message = get_clinical_message(risk_score)
+        
+        # ENSURE ALL VALUES ARE PYTHON TYPES
+        response = {
+            "risk_score": float(risk_score),           # ✓ Python float
+            "uncertainty": float(uncertainty),         # ✓ Python float
+            "message": str(message),                   # ✓ Python str
+            "future_forecast": [
+                {
+                    "month": int(item["month"]),       # ✓ Python int
+                    "risk_score": float(item["risk_score"])  # ✓ Python float
+                }
+                for item in forecast
+            ]
+        }
+        
+        return response
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Model file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 # ─────────────────────────────────────────────
 # 📄 PDF REPORT GENERATOR
 # ─────────────────────────────────────────────
@@ -336,68 +324,66 @@ def generate_report(data: ReportInput):
    )
 
 
+
 # ─────────────────────────────────────────────
-# 🔐 LOGIN
-# ─────────────────────────────────────────────
-
-
-class LoginInput(BaseModel):
-    """Login request model"""
-    username: str
-    password: str
-
-
-class RegisterInput(BaseModel):
-    """Registration request model"""
-    username: str
-    password: str
-    email: str
-    role: str = "user"
-
+# 🔐 LOGIN / REGISTER ENDPOINTS - FIXED FOR FORM DATA
+# ─────────────────────────────────────────────────────────
 
 @router.post("/login")
-def login(data: LoginInput):
+def login(
+    username: str = Form(...),
+    password: str = Form(...)
+):
     """
-    Login endpoint - verifies username/password and returns token
-    """
-    from backend.auth import load_users
+    Login endpoint - accepts multipart form data
     
-    # Authenticate user
-    if not authenticate_user(data.username, data.password):
+    CHANGES:
+    - Removed Pydantic LoginInput model
+    - Added Form(...) parameters
+    - Now accepts form data from HTML forms
+    """
+    
+    if not authenticate_user(username, password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
     
-    # Get user data for token
     users = load_users()
-    user = users.get(data.username, {})
+    user = users.get(username, {})
     
-    # Create JWT token
-    token = create_token({"sub": data.username, "role": user.get("role", "user")})
+    token = create_token({"sub": username, "role": user.get("role", "user")})
     
     return {
         "access_token": token,
         "token_type": "bearer",
         "role": user.get("role", "user"),
-        "username": data.username,
+        "username": username,
         "success": True
     }
 
 
 @router.post("/register")
-def register(data: RegisterInput):
+def register(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(...),
+    role: str = Form("user")
+):
     """
-    Register endpoint - creates new user with hashed password
-    """
-    from backend.auth import create_user
+    Register endpoint - accepts multipart form data
     
-    # Try to create user
+    CHANGES:
+    - Removed Pydantic RegisterInput model
+    - Added Form(...) parameters
+    - Now accepts form data from HTML forms
+    """
+    
     success = create_user(
-        username=data.username,
-        password=data.password,
-        role=data.role,
-        email=data.email
+        username=username,
+        password=password,
+        role=role,
+        email=email
     )
     
     if not success:
@@ -408,7 +394,7 @@ def register(data: RegisterInput):
     
     return {
         "success": True,
-        "message": f"User {data.username} created successfully",
-        "username": data.username,
-        "role": data.role
+        "message": f"User {username} created successfully",
+        "username": username,
+        "role": role
     }

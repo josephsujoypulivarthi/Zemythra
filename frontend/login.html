@@ -234,228 +234,240 @@
     </div>
   </div>
 
-  <script>
-    // API Configuration
-    const API_BASE_URL = 'http://127.0.0.1:8000';
-    const API_LOGIN_URL = `${API_BASE_URL}/login`;
-    const API_REGISTER_URL = `${API_BASE_URL}/register`;
+<script>
+  // API Configuration
+  const API_BASE_URL = 'http://127.0.0.1:8000';
+  const API_LOGIN_URL = `${API_BASE_URL}/login`;
+  const API_REGISTER_URL = `${API_BASE_URL}/register`;
 
-    // DOM Elements
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const userRole = document.getElementById('userRole');
-    const adminRole = document.getElementById('adminRole');
-    const nameField = document.getElementById('nameField');
-    const confirmField = document.getElementById('confirmField');
-    const submitBtn = document.getElementById('submitBtn');
-    const authForm = document.getElementById('authForm');
-    const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
-    const loading = document.getElementById('loading');
+  // DOM Elements
+  const loginTab = document.getElementById('loginTab');
+  const registerTab = document.getElementById('registerTab');
+  const userRole = document.getElementById('userRole');
+  const adminRole = document.getElementById('adminRole');
+  const nameField = document.getElementById('nameField');
+  const confirmField = document.getElementById('confirmField');
+  const submitBtn = document.getElementById('submitBtn');
+  const authForm = document.getElementById('authForm');
+  const errorMessage = document.getElementById('errorMessage');
+  const successMessage = document.getElementById('successMessage');
+  const loading = document.getElementById('loading');
 
-    // Form Inputs
-    const nameInput = document.getElementById('nameInput');
-    const usernameInput = document.getElementById('usernameInput');
-    const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
-    const confirmInput = document.getElementById('confirmInput');
+  // Form Inputs
+  const nameInput = document.getElementById('nameInput');
+  const usernameInput = document.getElementById('usernameInput');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const confirmInput = document.getElementById('confirmInput');
 
-    // State
-    let mode = 'login';
-    let role = 'user';
+  // State
+  let mode = 'login';
+  let role = 'user';
 
-    function updateUI() {
-      loginTab.classList.toggle('active', mode === 'login');
-      registerTab.classList.toggle('active', mode === 'register');
-     
-      if (mode === 'register') {
-        registerTab.style.background = 'linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef)';
-        registerTab.style.color = 'white';
-        loginTab.style.background = 'rgba(255,255,255,0.5)';
-        loginTab.style.color = '#1f2937';
-      } else {
-        loginTab.style.background = 'linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef)';
-        loginTab.style.color = 'white';
-        registerTab.style.background = 'rgba(255,255,255,0.5)';
-        registerTab.style.color = '#1f2937';
-      }
-
-      if (role === 'user') {
-        userRole.style.background = '';
-        userRole.style.color = '';
-        userRole.classList.add('btn-grad');
-        adminRole.style.background = 'rgba(255,255,255,0.5)';
-        adminRole.style.color = '#1f2937';
-        adminRole.classList.remove('btn-grad');
-      } else {
-        adminRole.style.background = '';
-        adminRole.style.color = '';
-        adminRole.classList.add('btn-grad');
-        userRole.style.background = 'rgba(255,255,255,0.5)';
-        userRole.style.color = '#1f2937';
-        userRole.classList.remove('btn-grad');
-      }
-
-      nameField.classList.toggle('hidden', mode !== 'register');
-      confirmField.classList.toggle('hidden', mode !== 'register');
-      submitBtn.textContent = mode === 'login' ? `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}` : `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`;
+  function updateUI() {
+    loginTab.classList.toggle('active', mode === 'login');
+    registerTab.classList.toggle('active', mode === 'register');
+   
+    if (mode === 'register') {
+      registerTab.style.background = 'linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef)';
+      registerTab.style.color = 'white';
+      loginTab.style.background = 'rgba(255,255,255,0.5)';
+      loginTab.style.color = '#1f2937';
+    } else {
+      loginTab.style.background = 'linear-gradient(135deg, #5b6df8, #a635e6 58%, #d946ef)';
+      loginTab.style.color = 'white';
+      registerTab.style.background = 'rgba(255,255,255,0.5)';
+      registerTab.style.color = '#1f2937';
     }
 
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = 'block';
-      successMessage.style.display = 'none';
+    if (role === 'user') {
+      userRole.style.background = '';
+      userRole.style.color = '';
+      userRole.classList.add('btn-grad');
+      adminRole.style.background = 'rgba(255,255,255,0.5)';
+      adminRole.style.color = '#1f2937';
+      adminRole.classList.remove('btn-grad');
+    } else {
+      adminRole.style.background = '';
+      adminRole.style.color = '';
+      adminRole.classList.add('btn-grad');
+      userRole.style.background = 'rgba(255,255,255,0.5)';
+      userRole.style.color = '#1f2937';
+      userRole.classList.remove('btn-grad');
     }
 
-    function showSuccess(message) {
-      successMessage.textContent = message;
-      successMessage.style.display = 'block';
-      errorMessage.style.display = 'none';
-    }
+    nameField.classList.toggle('hidden', mode !== 'register');
+    confirmField.classList.toggle('hidden', mode !== 'register');
+    submitBtn.textContent = mode === 'login' ? `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}` : `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`;
+  }
 
-    function hideMessages() {
-      errorMessage.style.display = 'none';
-      successMessage.style.display = 'none';
-    }
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    successMessage.style.display = 'none';
+  }
 
-    async function handleLogin(username, password) {
-      try {
-        loading.style.display = 'block';
-        hideMessages();
+  function showSuccess(message) {
+    successMessage.textContent = message;
+    successMessage.style.display = 'block';
+    errorMessage.style.display = 'none';
+  }
 
-        const response = await fetch(API_LOGIN_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: username,
-            password: password
-          })
-        });
+  function hideMessages() {
+    errorMessage.style.display = 'none';
+    successMessage.style.display = 'none';
+  }
 
-        const data = await response.json();
-
-        if (response.ok) {
-          // Store token in localStorage
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('user_role', data.role);
-          localStorage.setItem('username', data.username);
-
-          showSuccess(`Login successful! Redirecting as ${data.role}...`);
-          
-          // Redirect to homepage after 2 seconds
-          setTimeout(() => {
-            window.location.href = '/frontend/homepage.html';
-          }, 2000);
-        } else {
-          showError(data.detail || 'Login failed. Please try again.');
-        }
-      } catch (error) {
-        showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
-        console.error('Error:', error);
-      } finally {
-        loading.style.display = 'none';
-      }
-    }
-
-    async function handleRegister(username, email, password, confirmPassword) {
-      if (password !== confirmPassword) {
-        showError('Passwords do not match!');
-        return;
-      }
-
-      try {
-        loading.style.display = 'block';
-        hideMessages();
-
-        const response = await fetch(API_REGISTER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: username,
-            email: email,
-            password: password,
-            role: role
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          showSuccess('Account created successfully! You can now login.');
-          
-          // Clear form and switch to login
-          authForm.reset();
-          mode = 'login';
-          updateUI();
-          
-          // Fill username for quick login
-          usernameInput.value = username;
-        } else {
-          showError(data.detail || 'Registration failed. Username may already exist.');
-        }
-      } catch (error) {
-        showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
-        console.error('Error:', error);
-      } finally {
-        loading.style.display = 'none';
-      }
-    }
-
-    // Event Listeners
-    loginTab.addEventListener('click', () => {
-      mode = 'login';
-      updateUI();
+  // ✅ FIXED: Better error message extraction
+  async function handleLogin(username, password) {
+    try {
+      loading.style.display = 'block';
       hideMessages();
-    });
 
-    registerTab.addEventListener('click', () => {
-      mode = 'register';
-      updateUI();
-      hideMessages();
-    });
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
 
-    userRole.addEventListener('click', () => {
-      role = 'user';
-      updateUI();
-    });
+      const response = await fetch(API_LOGIN_URL, {
+        method: 'POST',
+        body: formData
+      });
 
-    adminRole.addEventListener('click', () => {
-      role = 'admin';
-      updateUI();
-    });
+      const data = await response.json();
 
-    authForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+      if (response.ok) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_role', data.role);
+        localStorage.setItem('username', data.username);
 
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value;
-
-      if (!username || !password) {
-        showError('Please enter username and password');
-        return;
-      }
-
-      if (mode === 'login') {
-        await handleLogin(username, password);
+        showSuccess(`Login successful! Redirecting as ${data.role}...`);
+        
+        setTimeout(() => {
+          window.location.href = '/frontend/homepage.html';
+        }, 2000);
       } else {
-        const email = emailInput.value.trim();
-        const confirmPassword = confirmInput.value;
-
-        if (!email || !confirmPassword) {
-          showError('Please fill in all fields');
-          return;
+        // Extract error message properly
+        let errorMsg = 'Login failed. Please try again.';
+        
+        if (data && data.detail) {
+          errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+        } else if (data && data.message) {
+          errorMsg = data.message;
         }
-
-        await handleRegister(username, email, password, confirmPassword);
+        
+        showError(errorMsg);
       }
-    });
+    } catch (error) {
+      showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
+      console.error('Error:', error);
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
 
-    // Initialize UI
+  // ✅ FIXED: Better error message extraction
+  async function handleRegister(username, email, password, confirmPassword) {
+    if (password !== confirmPassword) {
+      showError('Passwords do not match!');
+      return;
+    }
+
+    try {
+      loading.style.display = 'block';
+      hideMessages();
+
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('role', role);
+
+      const response = await fetch(API_REGISTER_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showSuccess('Account created successfully! You can now login.');
+        
+        authForm.reset();
+        mode = 'login';
+        updateUI();
+        
+        usernameInput.value = username;
+      } else {
+        // Extract error message properly
+        let errorMsg = 'Registration failed. Please try again.';
+        
+        if (data && data.detail) {
+          errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+        } else if (data && data.message) {
+          errorMsg = data.message;
+        }
+        
+        showError(errorMsg);
+      }
+    } catch (error) {
+      showError('Connection error: Make sure backend is running on http://127.0.0.1:8000');
+      console.error('Error:', error);
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  // Event Listeners
+  loginTab.addEventListener('click', () => {
+    mode = 'login';
     updateUI();
-  </script>
+    hideMessages();
+  });
+
+  registerTab.addEventListener('click', () => {
+    mode = 'register';
+    updateUI();
+    hideMessages();
+  });
+
+  userRole.addEventListener('click', () => {
+    role = 'user';
+    updateUI();
+  });
+
+  adminRole.addEventListener('click', () => {
+    role = 'admin';
+    updateUI();
+  });
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      showError('Please enter username and password');
+      return;
+    }
+
+    if (mode === 'login') {
+      await handleLogin(username, password);
+    } else {
+      const email = emailInput.value.trim();
+      const confirmPassword = confirmInput.value;
+
+      if (!email || !confirmPassword) {
+        showError('Please fill in all fields');
+        return;
+      }
+
+      await handleRegister(username, email, password, confirmPassword);
+    }
+  });
+
+  // Initialize UI
+  updateUI();
+</script>
 </body>
 </html>
