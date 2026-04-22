@@ -10,3 +10,9 @@ venv/
 
 # IDE
 .vscode/
+
+
+zemythra.db
+venv/
+__pycache__/
+*.pyc
