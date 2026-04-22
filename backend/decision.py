@@ -9,7 +9,10 @@ import pandas as pd
 # -------------------------
 # Load Risk Thresholds
 # -------------------------
-THRESHOLD_PATH = "backend/data/raw/risk_thresholds.csv"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+THRESHOLD_PATH = os.path.join(BASE_DIR, "data", "raw", "risk_thresholds.csv")
 
 
 def load_thresholds():

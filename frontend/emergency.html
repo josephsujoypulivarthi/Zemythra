@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zemythra Emergency System</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- FONT (same as chatbot/dashboard) -->
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background-image: url('https://img.freepik.com/premium-photo/black-background-with-neon-signs-picture-phone_900775-4760.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .grad {
+      background: linear-gradient(135deg,#ff4d4d,#ff0066,#a635e6);
+    }
+
+    /* 🚑 Pulsing ambulance */
+    .pulse {
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="flex">
+
+  <!-- 🔷 SIDEBAR -->
+  <div class="w-64 min-h-screen p-6 glass">
+    <h2 class="text-3xl font-bold mb-6">Zemythra</h2>
+
+    <nav class="space-y-4">
+      <button onclick="go('dashboard.html')" class="block w-full text-left hover:text-pink-400">Dashboard</button>
+      <button onclick="go('chatbot.html')" class="block w-full text-left hover:text-pink-400">AI Chat</button>
+      <button onclick="go('hospitals.html')" class="block w-full text-left hover:text-pink-400">Hospitals</button>
+      <button onclick="go('emergency.html')" class="block w-full text-left text-pink-400">Emergency</button>
+    </nav>
+  </div>
+
+  <!-- 🔷 MAIN -->
+  <div class="flex-1 p-6 space-y-6">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+      <h1 class="text-4xl font-bold">Live Emergency Tracking</h1>
+      <span class="text-red-400">Critical Mode Active</span>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid grid-cols-3 gap-6">
+
+      <!-- MAP -->
+      <div class="col-span-2 glass rounded-2xl overflow-hidden relative">
+
+        <div id="map" class="h-[600px] w-full"></div>
+
+        <!-- 🚑 Ambulance icon -->
+        <div id="ambulanceIcon"
+          class="absolute text-4xl pulse"
+          style="display:none;">
+          🚑
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="space-y-5">
+
+        <!-- STATUS -->
+        <div class="glass p-5 rounded-xl">
+          <h2 class="text-lg font-semibold mb-3">Emergency Status</h2>
+
+          <div class="space-y-2 text-sm">
+            <p class="text-green-400">✔ Emergency detected</p>
+            <p class="text-blue-400">✔ Ambulance dispatched</p>
+            <p class="text-yellow-400">➤ En route</p>
+          </div>
+
+          <button id="triggerBtn"
+            onclick="startEmergency()"
+            class="mt-4 w-full p-3 grad rounded-lg hover:scale-105 transition">
+            Activate Emergency
+          </button>
+        </div>
+
+        <!-- ETA -->
+        <div class="glass p-5 rounded-xl text-center">
+          <h2 class="text-lg font-semibold">ETA</h2>
+          <h1 id="eta" class="text-5xl font-bold mt-2">--</h1>
+        </div>
+
+        <!-- DOCTOR -->
+        <div class="glass p-5 rounded-xl">
+          <h2 class="text-lg font-semibold mb-2">Doctor Assigned</h2>
+          <p class="text-xl">Dr. Sharma</p>
+          <p class="text-gray-400">Emergency Specialist</p>
+        </div>
+
+        <!-- HOSPITAL -->
+        <div class="glass p-5 rounded-xl">
+          <h2 class="text-lg font-semibold mb-2">Hospital</h2>
+          <p>Anupama Hospital</p>
+          <p class="text-gray-400">Emergency Unit Active</p>
+        </div>
+
+        <!-- CALL -->
+        <button onclick="callHospital()"
+          class="w-full p-3 bg-red-500 rounded-lg hover:bg-red-600 transition">
+          Contact Hospital
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let map, userMarker, hospitalMarker, routeLine;
+let userLat, userLon;
+
+// NAV
+function go(p){ window.location.href = p; }
+
+// INIT MAP
+navigator.geolocation.getCurrentPosition(pos => {
+
+  userLat = pos.coords.latitude;
+  userLon = pos.coords.longitude;
+
+  map = L.map('map').setView([userLat, userLon], 14);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+    .addTo(map);
+
+  userMarker = L.marker([userLat, userLon]).addTo(map)
+    .bindPopup("You").openPopup();
+
+});
+
+// 🚨 START EMERGENCY
+async function startEmergency(){
+
+  const res = await fetch("http://127.0.0.1:8000/emergency-real", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      lat: userLat,
+      lon: userLon,
+      symptoms: "emergency"
+    })
+  });
+
+  const data = await res.json();
+
+  // ETA
+  let time = parseInt(data.eta);
+  document.getElementById("eta").innerText = time + " min";
+
+  // HOSPITAL LOCATION (demo offset)
+  const hospitalLat = userLat + 0.01;
+  const hospitalLon = userLon - 0.01;
+
+  hospitalMarker = L.marker([hospitalLat, hospitalLon]).addTo(map)
+    .bindPopup(data.hospital);
+
+  drawRoute(userLat, userLon, hospitalLat, hospitalLon);
+
+  animateAmbulance(userLat, userLon, hospitalLat, hospitalLon);
+}
+
+// ROUTE
+async function drawRoute(lat1, lon1, lat2, lon2){
+
+  const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+
+  routeLine = L.polyline(coords, {color:"red", weight:5}).addTo(map);
+}
+
+// 🚑 ANIMATION
+function animateAmbulance(lat1, lon1, lat2, lon2){
+
+  const icon = document.getElementById("ambulanceIcon");
+  icon.style.display = "block";
+
+  let progress = 0;
+
+  const interval = setInterval(() => {
+
+    progress += 0.02;
+
+    const lat = lat1 + (lat2-lat1)*progress;
+    const lon = lon1 + (lon2-lon1)*progress;
+
+    const point = map.latLngToContainerPoint([lat, lon]);
+
+    icon.style.left = point.x + "px";
+    icon.style.top = point.y + "px";
+
+    if(progress >= 1){
+      clearInterval(interval);
+      document.getElementById("eta").innerText = "Arrived";
+    }
+
+  }, 200);
+}
+
+// 📞 CALL
+function callHospital(){
+  window.location.href = "tel:+919999999999";
+}
+
+</script>
+
+</body>
+</html>

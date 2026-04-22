@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zemythra Hospitals</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- SAME FONT AS CHATBOT -->
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background-image: url('https://img.freepik.com/premium-photo/black-background-with-neon-signs-picture-phone_900775-4760.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .grad {
+      background: linear-gradient(135deg,#5b6df8,#a635e6,#d946ef);
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="flex justify-between items-center p-5 border-b border-white/10 glass">
+  <h1 class="text-2xl font-bold">Hospital Intelligence</h1>
+  <button onclick="go('dashboard.html')" class="text-sm text-gray-300 hover:text-white">
+    ← Back
+  </button>
+</div>
+
+<div class="flex h-[calc(100vh-80px)]">
+
+  <!-- LEFT PANEL -->
+  <div class="w-[420px] p-5 overflow-y-auto space-y-4 glass">
+
+    <h2 class="text-lg font-semibold mb-2">Nearby Hospitals</h2>
+
+    <div id="hospitalList" class="space-y-4"></div>
+
+  </div>
+
+  <!-- MAP -->
+  <div id="map" class="flex-1"></div>
+
+</div>
+
+<script>
+
+let map;
+let userLat, userLon;
+
+// ICONS
+const userIcon = L.icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+  iconSize: [40,40]
+});
+
+const hospitalIcon = L.icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  iconSize: [35,35]
+});
+
+// INIT
+window.onload = init;
+
+function go(p){ window.location.href = p; }
+
+async function init() {
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+
+    userLat = pos.coords.latitude;
+    userLon = pos.coords.longitude;
+
+    map = L.map('map').setView([userLat, userLon], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+      .addTo(map);
+
+    L.marker([userLat,userLon],{icon:userIcon})
+      .addTo(map)
+      .bindPopup("You");
+
+    const hospitals = await getHospitals(userLat,userLon);
+    renderHospitals(hospitals);
+
+  });
+}
+
+// FETCH
+async function getHospitals(lat, lon) {
+
+  const query = `
+  [out:json];
+  node["amenity"="hospital"](around:4000, ${lat}, ${lon});
+  out;
+  `;
+
+  const res = await fetch("https://overpass-api.de/api/interpreter", {
+    method:"POST",
+    body:query
+  });
+
+  const data = await res.json();
+
+  return data.elements.map(h => ({
+    name: h.tags.name || "Hospital",
+    lat: h.lat,
+    lon: h.lon,
+    rating: (Math.random()*2+3).toFixed(1),
+    specialization: getSpec(),
+    doctor: getDoc(),
+    phone: "+91 9876543210"
+  }));
+}
+
+// HELPERS
+function getSpec(){
+  return ["Cardiology","Emergency","Neurology","Orthopedics"]
+    [Math.floor(Math.random()*4)];
+}
+
+function getDoc(){
+  return ["Dr. Sharma","Dr. Reddy","Dr. Mehta","Dr. Khan"]
+    [Math.floor(Math.random()*4)];
+}
+
+// DISTANCE
+function dist(lat1,lon1,lat2,lon2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLon/2)**2;
+  return (R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(2);
+}
+
+// RENDER
+function renderHospitals(hospitals){
+
+  const container = document.getElementById("hospitalList");
+  container.innerHTML="";
+
+  hospitals.forEach(h=>{
+
+    const d = dist(userLat,userLon,h.lat,h.lon);
+
+    // MAP
+    L.marker([h.lat,h.lon],{icon:hospitalIcon})
+      .addTo(map)
+      .bindPopup(h.name);
+
+    // CARD
+    const card = document.createElement("div");
+
+    card.className = `
+      glass p-5 rounded-2xl
+      hover:scale-[1.02] transition
+      cursor-pointer
+    `;
+
+    card.innerHTML = `
+      <div class="flex justify-between">
+        <h3 class="font-bold text-lg">${h.name}</h3>
+        <span class="text-indigo-300">${d} km</span>
+      </div>
+
+      <div class="text-sm text-gray-300 mt-1">
+        ${h.specialization}
+      </div>
+
+      <div class="flex justify-between mt-2 text-sm">
+        <span>⭐ ${h.rating}</span>
+        <span>${h.doctor}</span>
+      </div>
+
+      <div class="mt-4 flex justify-between items-center">
+
+        <button onclick="call('${h.phone}')"
+          class="px-4 py-2 rounded-xl grad text-white text-sm">
+          Call
+        </button>
+
+        <button onclick="focus(${h.lat},${h.lon})"
+          class="text-sm text-gray-400 hover:text-white">
+          View
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(card);
+
+  });
+}
+
+// MAP FOCUS
+function focus(lat,lon){
+  map.setView([lat,lon],16);
+}
+
+// CALL
+function call(num){
+  window.location.href="tel:"+num;
+}
+
+</script>
+
+</body>
+</html>

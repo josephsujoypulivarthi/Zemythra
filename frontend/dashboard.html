@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zemythra Clinical Intelligence</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background: linear-gradient(135deg,#eef2ff,#f8fafc);
+      color: #0f172a;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    }
+
+    .btn {
+      background: linear-gradient(135deg,#6366f1,#3b82f6);
+      color: white;
+    }
+
+    .critical {
+      color: red;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% {opacity: 0.4;}
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="p-6 flex justify-between">
+  <h1 class="text-4xl font-bold">Zemythra AI Clinical System</h1>
+  <span id="roleText"></span>
+</div>
+
+<div class="grid grid-cols-3 gap-8 p-8">
+
+  <!-- INPUT -->
+  <div class="glass p-6 rounded-2xl space-y-4">
+
+    <h2 class="text-xl font-semibold">Patient Input</h2>
+
+    <input id="age" placeholder="Age" class="w-full p-3 border rounded">
+    <input id="bmi" placeholder="BMI" class="w-full p-3 border rounded">
+    <input id="glucose" placeholder="Glucose" class="w-full p-3 border rounded">
+    <input id="bp" placeholder="Blood Pressure" class="w-full p-3 border rounded">
+
+    <button onclick="predict()" class="w-full p-3 rounded-xl btn">
+      Analyze Risk
+    </button>
+
+    <div id="alertBox" class="text-center text-lg"></div>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="col-span-2 space-y-6">
+
+    <!-- SCORE -->
+    <div class="glass p-6 rounded-2xl">
+      <h2 class="text-xl">Risk Score</h2>
+      <h1 id="riskScore" class="text-6xl font-bold">--</h1>
+      <p id="confidence"></p>
+      <p id="severity" class="font-semibold mt-2"></p>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="glass p-6 rounded-2xl">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <!-- 🥗 RECOMMENDATIONS -->
+    <div class="glass p-6 rounded-2xl">
+      <h2 class="text-xl font-semibold mb-3">Clinical Recommendations</h2>
+
+      <div id="recommendationBox" class="space-y-3 text-sm"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="glass p-6 rounded-2xl">
+      <h2 class="text-lg font-semibold">Patient History</h2>
+      <div id="history"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+document.getElementById("roleText").innerText =
+  "Role: " + (localStorage.getItem("zemythra_role") || "User");
+
+// GRAPH
+let chart;
+
+function initChart(){
+
+  const ctx = document.getElementById("chart").getContext("2d");
+
+  const gradient = ctx.createLinearGradient(0,0,0,300);
+  gradient.addColorStop(0,"rgba(99,102,241,0.4)");
+  gradient.addColorStop(1,"rgba(99,102,241,0)");
+
+  chart = new Chart(ctx,{
+    type:"line",
+    data:{
+      labels:[],
+      datasets:[
+        {
+          label:"Risk",
+          data:[],
+          borderColor:"#6366f1",
+          backgroundColor:gradient,
+          fill:true,
+          tension:0.4,
+          borderWidth:3
+        },
+        {
+          label:"Anomaly",
+          data:[],
+          borderColor:"red",
+          pointRadius:6,
+          showLine:false
+        }
+      ]
+    }
+  });
+}
+initChart();
+
+// 🔥 ADVANCED DETECTION
+function analyzeRisk(score){
+
+  if(score > 90) return "CRITICAL";
+  if(score > 75) return "HIGH";
+  if(score > 50) return "MODERATE";
+  return "LOW";
+}
+
+// 🥗 RECOMMENDATIONS ENGINE
+function generateRecommendations(level){
+
+  const box = document.getElementById("recommendationBox");
+
+  let html = "";
+
+  if(level === "CRITICAL"){
+    html = `
+      🚨 Immediate hospitalization recommended<br>
+      🍽 Avoid all high sugar & salt foods<br>
+      🛑 No physical strain<br>
+      👨‍⚕️ Consult cardiologist immediately
+    `;
+  }
+
+  else if(level === "HIGH"){
+    html = `
+      ⚠️ Reduce sugar & processed food<br>
+      🥗 High fiber diet recommended<br>
+      🚶 Light walking 20 mins/day<br>
+      📊 Monitor vitals daily
+    `;
+  }
+
+  else if(level === "MODERATE"){
+    html = `
+      🥗 Balanced diet (vegetables + protein)<br>
+      🏃 Exercise 30 mins/day<br>
+      💧 Stay hydrated<br>
+      🧠 Stress management
+    `;
+  }
+
+  else{
+    html = `
+      ✅ Maintain healthy lifestyle<br>
+      🏃 Regular exercise<br>
+      🍎 Balanced diet<br>
+      😴 Proper sleep
+    `;
+  }
+
+  box.innerHTML = html;
+}
+
+// GRAPH UPDATE
+function updateGraph(value){
+
+  chart.data.labels.push(new Date().toLocaleTimeString());
+  chart.data.datasets[0].data.push(value);
+
+  if(value > 85){
+    chart.data.datasets[1].data.push(value);
+  } else {
+    chart.data.datasets[1].data.push(null);
+  }
+
+  if(chart.data.labels.length > 12){
+    chart.data.labels.shift();
+    chart.data.datasets.forEach(d=>d.data.shift());
+  }
+
+  chart.update();
+}
+
+// ALERT
+function showAlert(level){
+
+  const box = document.getElementById("alertBox");
+
+  if(level === "CRITICAL"){
+    box.innerText = "🚨 CRITICAL CONDITION";
+    box.className = "critical text-center";
+  } else {
+    box.innerText = "";
+  }
+}
+
+// API
+async function predict(){
+
+  const data = {
+    age: Number(age.value),
+    gender: 1,
+    sys_bp: Number(bp.value),
+    dia_bp: 80,
+    glucose: Number(glucose.value),
+    cholesterol: 200,
+    bmi: Number(bmi.value),
+    heart_rate: 72
+  };
+
+  const res = await fetch("http://127.0.0.1:8000/predict",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  const score = Math.round(result.risk_score * 100);
+
+  const level = analyzeRisk(score);
+
+  riskScore.innerText = score + "%";
+  confidence.innerText = "Confidence: " +
+    ((1-(result.uncertainty||0.1))*100).toFixed(1)+"%";
+
+  severity.innerText = "Severity: " + level;
+
+  updateGraph(score);
+  generateRecommendations(level);
+  showAlert(level);
+
+  saveHistory(score);
+  loadHistory();
+}
+
+// HISTORY
+async function saveHistory(score){
+  await fetch("http://127.0.0.1:8000/save-history",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({score})
+  });
+}
+
+async function loadHistory(){
+  const res = await fetch("http://127.0.0.1:8000/history");
+  const data = await res.json();
+
+  const container = document.getElementById("history");
+  container.innerHTML="";
+
+  data.forEach(h=>{
+    container.innerHTML += `
+      <div class="flex justify-between text-sm border-b py-1">
+        <span>${h.time}</span>
+        <span>${h.score}%</span>
+      </div>
+    `;
+  });
+}
+loadHistory();
+
+</script>
+
+</body>
+</html>

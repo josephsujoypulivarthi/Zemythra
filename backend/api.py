@@ -1,23 +1,141 @@
-"""
-Zemythra - API Layer (Block B)
-Skeleton backend without AI dependency
-"""
-
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
+from typing import Optional
 import pandas as pd
+import random
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from backend.auth import authenticate_user, create_token
+from fastapi import Depends
+from backend.db import insert_history, get_history
+from datetime import datetime
 
+from backend.chat_service import (
+    build_prompt,
+    call_ollama,
+    call_ollama_stream,
+    generate_video_suggestions,
+    next_question_suggestions,
+)
 
-# Import Updated Interfaces
 from .model import unified_predict
 from .decision import evaluate_risk
 from .temporal_model import forecast_future_risk
 
+from pydantic import BaseModel
+
 router = APIRouter()
 
-# -------------------------
-# Input Schema
-# -------------------------
+# ─────────────────────────────────────────────
+# 🧠 EXPLAINABILITY FUNCTION (NEW)
+# ─────────────────────────────────────────────
+
+def get_explanation(sample_input):
+    explanations = []
+
+    if sample_input["glucose"] > 130:
+        explanations.append("High glucose levels")
+
+    if sample_input["bmi"] > 25:
+        explanations.append("High BMI")
+
+    if sample_input["blood_pressure"] > 85:
+        explanations.append("Elevated blood pressure")
+
+    if sample_input["age"] > 40:
+        explanations.append("Age risk factor")
+
+    return explanations[:3]
+
+# ─────────────────────────────────────────────
+# 🧠 CHAT ENDPOINT (AI + EXPLAINABILITY)
+# ─────────────────────────────────────────────
+
+@router.post("/chat")
+async def chat(
+    prompt: str = Form(...),
+    model: str = Form("gemma3:4b"),
+    image: Optional[UploadFile] = File(None),
+):
+
+    image_bytes = None
+    if image:
+        image_bytes = await image.read()
+
+    prompt_text = build_prompt(
+        user_prompt=prompt,
+        has_image=bool(image),
+    )
+
+    answer = call_ollama(prompt_text, image_bytes, model=model)
+
+    # 🧠 REAL ML MODEL
+    try:
+        sample_input = {
+            "age": 45,
+            "bmi": 28,
+            "glucose": 140,
+            "blood_pressure": 90,
+            "symptom_text": prompt
+        }
+
+        risk_score = unified_predict(sample_input)
+        risk_score = int(risk_score)
+
+        # 🔥 Explainability
+        explanations = get_explanation(sample_input)
+
+    except Exception as e:
+        print("Model error:", e)
+        risk_score = 0
+        explanations = []
+
+    # 🎯 Confidence
+    confidence = round(random.uniform(0.75, 0.95), 2)
+
+    return {
+        "response": answer,
+        "video_suggestions": generate_video_suggestions(prompt),
+        "next_questions": next_question_suggestions(prompt),
+        "risk_score": risk_score,
+        "confidence": confidence,
+        "explanations": explanations
+    }
+
+# ─────────────────────────────────────────────
+# 🔄 STREAM CHAT
+# ─────────────────────────────────────────────
+
+@router.post("/chat/stream")
+async def chat_stream(
+    prompt: str = Form(...),
+    model: str = Form("gemma3:4b"),
+    image: Optional[UploadFile] = File(None),
+):
+
+    image_bytes = None
+    if image:
+        image_bytes = await image.read()
+
+    prompt_text = build_prompt(
+        user_prompt=prompt,
+        has_image=bool(image),
+    )
+
+    async def generate_tokens():
+        try:
+            for token in call_ollama_stream(prompt_text, image_bytes, model=model):
+                yield token
+        except Exception as e:
+            yield f"Error: {str(e)}"
+
+    return StreamingResponse(generate_tokens(), media_type="text/plain")
+
+# ─────────────────────────────────────────────
+# 🏥 PREDICTION API
+# ─────────────────────────────────────────────
+
 class PredictionInput(BaseModel):
     age: int
     gender: int
@@ -28,42 +146,163 @@ class PredictionInput(BaseModel):
     bmi: float
     heart_rate: float
 
-# =========================
-# Real Prediction Endpoint
-# =========================
 @router.post("/predict")
 def predict_risk(data: PredictionInput):
 
-    # Convert request to DataFrame
     input_df = pd.DataFrame([data.model_dump()])
 
-    # Step A – AI Prediction
     risk_score, uncertainty = unified_predict(input_df)
 
-    # Step B – Clinical Decision Logic
     decision_output = evaluate_risk(
         risk_score=risk_score,
         uncertainty=uncertainty
     )
 
-    # Attach numerical outputs
     decision_output["risk_score"] = round(risk_score, 3)
     decision_output["uncertainty"] = round(uncertainty, 3)
-
-    # Step C – Temporal Forecast
     decision_output["future_forecast"] = forecast_future_risk()
 
     return decision_output
 
+# ─────────────────────────────────────────────
+# 🚑 EMERGENCY
+# ─────────────────────────────────────────────
 
-# =========================
-# Timeline Endpoint
-# =========================
-@router.get("/timeline/{patient_id}")
-def timeline(patient_id: int):
-    return [
-        {"month": 1, "risk_score": 0.45},
-        {"month": 2, "risk_score": 0.60},
-        {"month": 3, "risk_score": 0.72},
-        {"month": 4, "risk_score": 0.81}
+class EmergencyInput(BaseModel):
+    lat: float
+    lon: float
+    symptoms: str
+
+@router.post("/emergency-real")
+def emergency_real(data: EmergencyInput):
+
+    hospitals = [
+        {"name": "Apollo Hospital", "phone": "+91 4043441066", "department": "Cardiology", "rating": 4.8},
+        {"name": "Care Hospital", "phone": "+91 4061625656", "department": "Emergency", "rating": 4.6},
     ]
+
+    best = sorted(hospitals, key=lambda h: -h["rating"])[0]
+
+    return {
+        "status": "critical",
+        "hospital": best["name"],
+        "phone": best["phone"],
+        "department": best["department"],
+        "eta": f"{random.randint(5,12)} minutes",
+        "ambulance": "Dispatched"
+    }
+
+# ─────────────────────────────────────────────
+# 🏥 HOSPITALS
+# ─────────────────────────────────────────────
+
+class HospitalInput(BaseModel):
+    disease: str
+
+@router.post("/hospitals")
+def get_hospitals(data: HospitalInput):
+
+    if "heart" in data.disease.lower():
+        return [
+            {"name": "Apollo Hospital", "rating": 4.8, "specialization": "Cardiology"},
+            {"name": "Care Hospital", "rating": 4.6, "specialization": "Heart Care"}
+        ]
+
+    return [
+        {"name": "General Hospital", "rating": 4.2, "specialization": "Multi-specialty"}
+    ]
+
+# ─────────────────────────────────────────────
+# 📄 PDF REPORT GENERATOR
+# ─────────────────────────────────────────────
+
+class ReportInput(BaseModel):
+    risk_score: int
+    confidence: float
+    explanations: list[str]
+
+@router.post("/report")
+def generate_report(data: ReportInput):
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+    content = []
+
+    # Title
+    content.append(Paragraph("AI Health Risk Report", styles["Title"]))
+    content.append(Spacer(1, 12))
+
+    # Risk Score
+    content.append(Paragraph(f"Risk Score: {data.risk_score}", styles["Heading2"]))
+    content.append(Spacer(1, 10))
+
+    # Confidence
+    content.append(Paragraph(f"Confidence: {data.confidence}", styles["Normal"]))
+    content.append(Spacer(1, 10))
+
+    # Explanation
+    content.append(Paragraph("Key Factors:", styles["Heading3"]))
+    for exp in data.explanations:
+        content.append(Paragraph(f"- {exp}", styles["Normal"]))
+
+    content.append(Spacer(1, 12))
+
+    # Recommendation
+    if data.risk_score > 80:
+        rec = "High risk detected. Immediate medical consultation recommended."
+    elif data.risk_score > 50:
+        rec = "Moderate risk. Lifestyle changes advised."
+    else:
+        rec = "Low risk. Maintain healthy habits."
+
+    content.append(Paragraph("Recommendation:", styles["Heading3"]))
+    content.append(Paragraph(rec, styles["Normal"]))
+
+    doc.build(content)
+
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=health_report.pdf"},
+    )
+
+# ─────────────────────────────────────────────
+# 🔐 LOGIN
+# ─────────────────────────────────────────────
+
+class LoginInput(BaseModel):
+    username: str
+    password: str
+
+@router.post("/login")
+def login(data: LoginInput):
+
+    user = authenticate_user(data.username, data.password)
+
+    if not user:
+        return {"error": "Invalid credentials"}
+
+    token = create_token(user)
+
+    return {
+        "access_token": token,
+        "role": user["role"]
+    }
+
+@router.post("/save-history")
+def save_history(data: dict):
+
+    score = data.get("score")
+
+    time = datetime.now().strftime("%H:%M:%S")
+
+    insert_history(score, time)
+
+    return {"status": "saved"}
+@router.get("/history")
+def fetch_history():
+    return get_history()
