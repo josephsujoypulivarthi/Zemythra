@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zemythra</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f8;
+      --surface: rgba(255,255,255,0.76);
+      --surface-2: rgba(255,255,255,0.92);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: rgba(255,255,255,0.58);
+      --accent-1: #5b6df8;
+      --accent-2: #a635e6;
+      --accent-3: #ff9b3d;
+      --accent-4: #b7c7ff;
+      --shadow: 0 18px 45px rgba(91, 109, 248, 0.14);
+      --shadow-soft: 0 14px 40px rgba(166, 53, 230, 0.10);
+    }
+
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 12%, rgba(183,199,255,0.72), transparent 28%),
+        radial-gradient(circle at 50% 78%, rgba(255,166,77,0.36), transparent 24%),
+        linear-gradient(180deg, #f7f8ff 0%, #f8fbff 45%, #f7f2ff 100%);
+      overflow-x: hidden;
+    }
+
+
+    .glass {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+
+    .glass-soft {
+      background: rgba(255,255,255,0.66);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow-soft);
+    }
+
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+
+    .top-pill {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      backdrop-filter: blur(14px);
+    }
+
+
+    .cta-dark {
+      background: linear-gradient(180deg, #32323a 0%, #17171d 100%);
+      color: white;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+
+    .cta-light {
+      background: rgba(255,255,255,0.86);
+      color: #111827;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+
+    .tag-pill {
+      background: rgba(255,255,255,0.76);
+      border: 1px solid rgba(180,190,230,0.35);
+      box-shadow: 0 8px 22px rgba(91,109,248,0.08);
+    }
+
+
+    .floating-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 2rem;
+      min-height: 480px;
+      background: linear-gradient(180deg, #ff7b08 0%, #ffb75e 56%, #b8c9ff 100%);
+      box-shadow: 0 30px 70px rgba(255, 137, 61, 0.18);
+    }
+
+
+    .floating-card::before,
+    .floating-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+
+    .floating-card::before {
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.28), transparent 42%);
+    }
+
+
+    .diamond {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      border-radius: 2rem;
+      background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 18px 30px rgba(255,168,88,0.2);
+      animation: floatDiamond 6s ease-in-out infinite;
+    }
+
+
+    .diamond.layer-2 {
+      width: 220px;
+      height: 220px;
+      animation-delay: -2s;
+      opacity: 0.7;
+    }
+
+
+    .diamond.layer-3 {
+      width: 160px;
+      height: 160px;
+      animation-delay: -4s;
+      opacity: 0.5;
+    }
+
+
+    @keyframes floatDiamond {
+      0%, 100% { transform: translate(-50%, -50%) rotate(45deg) translateY(0px) scale(1); }
+      50% { transform: translate(-50%, -50%) rotate(45deg) translateY(-12px) scale(1.03); }
+    }
+
+
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: reveal 0.8s ease forwards;
+    }
+
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    .chip {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(210,218,245,0.75);
+      box-shadow: 0 8px 20px rgba(110,120,255,0.07);
+    }
+
+
+    .emoji-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.09;
+      font-size: 2rem;
+    }
+
+
+    .emoji-bg span {
+      position: absolute;
+      animation: drift 18s linear infinite;
+    }
+
+
+    @keyframes drift {
+      from { transform: translateY(40px); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      to { transform: translateY(-120vh); opacity: 0; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="emoji-bg" aria-hidden="true">
+    <span style="left:8%; bottom:-5%; animation-delay:0s;">🫀</span>
+    <span style="left:19%; bottom:-12%; animation-delay:4s;">🩺</span>
+    <span style="left:31%; bottom:-8%; animation-delay:8s;">💙</span>
+    <span style="left:46%; bottom:-14%; animation-delay:2s;">🧬</span>
+    <span style="left:61%; bottom:-6%; animation-delay:6s;">🏥</span>
+    <span style="left:74%; bottom:-10%; animation-delay:10s;">🫁</span>
+    <span style="left:87%; bottom:-7%; animation-delay:1s;">💊</span>
+  </div>
+
+
+  <div class="relative z-10 px-4 md:px-8 lg:px-10 pt-6 pb-16">
+    <header class="top-pill max-w-7xl mx-auto rounded-full px-5 md:px-8 py-4 flex flex-col lg:flex-row items-center justify-between gap-4 section-reveal" style="animation-delay:0.05s;">
+      <div class="flex items-center gap-3">
+        <div>
+          <div class="text-3xl font-black tracking-tight">zemythra</div>
+          <div class="text-xs text-slate-500 -mt-1">AI healthcare intelligence starts here</div>
+        </div>
+      </div>
+
+
+      <nav class="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-sm font-semibold text-slate-700">
+        <a href="./homepage.html" class="hover:text-indigo-600 transition">Home</a>
+        <a href="./dashboard.html" class="hover:text-indigo-600 transition">Dashboard</a>
+        <a href="./chatbot.html" class="hover:text-indigo-600 transition">Chatbot</a>
+        <a href="./hospitals.html" class="hover:text-indigo-600 transition">Hospital Finder</a>
+        <a href="./emergency.html" class="hover:text-indigo-600 transition">Emergency Tracker</a>
+      </nav>
+
+
+      <div class="flex items-center gap-3">
+        <a href="./dashboard.html" class="cta-dark rounded-full px-5 py-3 text-sm font-semibold hover:scale-[1.02] transition">Experience Us</a>
+        <a href="#developers" class="cta-light rounded-full px-5 py-3 text-sm font-medium hover:scale-[1.02] transition">Developer Info</a>
+      </div>
+    </header>
+
+
+    <main class="max-w-7xl mx-auto">
+      <section id="welcome" class="min-h-[88vh] flex flex-col items-center justify-center text-center px-4 section-reveal" style="animation-delay:0.12s;">
+        <div class="inline-flex items-center gap-2 px-5 py-3 rounded-full glass-soft text-indigo-700 text-sm font-semibold mb-8 mt-4">
+          <span>🏥</span>
+          <span>Zemythra Healthcare Intelligence Platform</span>
+        </div>
+
+
+        <h1 class="hero-title max-w-5xl text-slate-900">AI care for every patient journey</h1>
+        <p class="text-xl md:text-2xl text-slate-600 max-w-4xl mt-6 leading-relaxed">
+          Zemythra combines patient risk prediction, clinical support, health chatbot guidance, and hospital discovery in one unified healthcare interface.
+        </p>
+        <p class="text-base md:text-lg text-slate-500 max-w-3xl mt-3 leading-8">
+          Built with intelligent workflows, elegant dashboards, and a visual system aligned to your chatbot interface.
+        </p>
+
+
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a href="./dashboard.html" class="cta-dark rounded-full px-8 py-4 text-lg font-semibold hover:scale-[1.02] transition">Get Started</a>
+          <a href="#developers" class="cta-light rounded-full px-8 py-4 text-lg font-medium hover:scale-[1.02] transition">Explore Modules</a>
+        </div>
+
+
+        <div class="mt-12 text-xs md:text-sm tracking-[0.35em] uppercase text-slate-500 font-semibold">Predict • Assist • Monitor • Navigate</div>
+      </section>
+
+
+      <section id="developers" class="grid lg:grid-cols-2 gap-12 items-center py-16 md:py-24 section-reveal" style="animation-delay:0.18s;">
+        <div class="floating-card mx-auto w-full max-w-[520px]">
+          <div class="diamond"></div>
+          <div class="diamond layer-2"></div>
+          <div class="diamond layer-3"></div>
+        </div>
+        <div class="pr-2 md:pr-8">
+          <p class="text-sm font-bold uppercase tracking-[0.25em] text-slate-500 mb-4">Developer Vision</p>
+          <h2 class="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">State-of-the-art healthcare workflow modules</h2>
+          <p class="mt-6 text-xl text-slate-600 leading-10 max-w-xl">
+            Zemythra brings together modern patient support tools, explainable risk interfaces, clinical admin views, and modular AI components for healthcare product development.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4 text-lg text-slate-700">
+            <span class="chip rounded-full px-6 py-3">Risk Engine</span>
+            <span class="chip rounded-full px-6 py-3">Admin Timeline</span>
+            <span class="chip rounded-full px-6 py-3">Health Chatbot</span>
+            <span class="chip rounded-full px-6 py-3">Hospital Finder</span>
+            <span class="chip rounded-full px-6 py-3">Vision Support</span>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="user" class="grid lg:grid-cols-2 gap-12 items-center py-12 md:py-20 section-reveal" style="animation-delay:0.24s;">
+        <div class="glass rounded-[32px] p-8 md:p-10 order-2 lg:order-1">
+          <p class="text-sm font-bold uppercase tracking-[0.25em] text-slate-500 mb-4">User Section</p>
+          <h3 class="text-3xl md:text-4xl font-semibold">Patient-facing dashboards for quick risk understanding</h3>
+          <p class="mt-5 text-lg text-slate-600 leading-9">
+            Designed for clear inputs, readable outputs, and intuitive recommendations. Users can evaluate health risk, track warnings, and understand likely next steps with confidence.
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <span class="chip px-5 py-3 rounded-full">Vitals Input</span>
+            <span class="chip px-5 py-3 rounded-full">Risk Score</span>
+            <span class="chip px-5 py-3 rounded-full">Recommendations</span>
+          </div>
+        </div>
+        <div class="floating-card mx-auto w-full max-w-[500px] order-1 lg:order-2">
+          <div class="diamond"></div>
+        </div>
+      </section>
+
+
+      <section id="admin" class="grid lg:grid-cols-2 gap-12 items-center py-12 md:py-20 section-reveal" style="animation-delay:0.3s;">
+        <div class="floating-card mx-auto w-full max-w-[500px]">
+          <div class="diamond"></div>
+          <div class="diamond layer-2"></div>
+        </div>
+        <div>
+          <p class="text-sm font-bold uppercase tracking-[0.25em] text-slate-500 mb-4">Admin Section</p>
+          <h3 class="text-3xl md:text-4xl font-semibold">Timeline monitoring for clinical and operational oversight</h3>
+          <p class="mt-5 text-lg text-slate-600 leading-9">
+            The admin view supports patient timeline tracking, longitudinal risk visualization, and a faster understanding of changes over time inside a polished decision-support dashboard.
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <span class="chip px-5 py-3 rounded-full">Timeline Charts</span>
+            <span class="chip px-5 py-3 rounded-full">Trend Analysis</span>
+            <span class="chip px-5 py-3 rounded-full">Admin Access</span>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="chatbot" class="grid md:grid-cols-2 xl:grid-cols-4 gap-6 py-14 section-reveal" style="animation-delay:0.36s;">
+        <div class="glass rounded-[28px] p-7">
+          <div class="text-4xl mb-4">🤖</div>
+          <h4 class="text-2xl font-semibold">Chatbot</h4>
+          <p class="mt-3 text-slate-600 leading-8">Guided health Q&A with image-aware support and safe response formatting.</p>
+        </div>
+        <div class="glass rounded-[28px] p-7">
+          <div class="text-4xl mb-4">🧑</div>
+          <h4 class="text-2xl font-semibold">User Portal</h4>
+          <p class="mt-3 text-slate-600 leading-8">Easy patient input forms for quick prediction and understandable guidance.</p>
+        </div>
+        <div class="glass rounded-[28px] p-7">
+          <div class="text-4xl mb-4">📈</div>
+          <h4 class="text-2xl font-semibold">Admin Insights</h4>
+          <p class="mt-3 text-slate-600 leading-8">Visual timeline views and monitoring components for managing patient progress.</p>
+        </div>
+        <div id="finder" class="glass rounded-[28px] p-7">
+          <div class="text-4xl mb-4">🚨^-^📍</div>
+          <h4 class="text-2xl font-semibold">Hospital & Emergency tracker</h4>
+          <p class="mt-3 text-slate-600 leading-8">A area of focus for integrating nearby hospitals and healthcare access tools.
+            It monitors and manages emergency situations of patients.</p>
+        </div>   
+      </section>
+    </main>
+  </div>
+
+
+  <div class="zemythra-bottom-section-fullwidth">
+  <style>
+    .zemythra-bottom-section-fullwidth {
+      position: relative;
+      width: 100vw;
+      min-height: 100vh;
+      margin-left: calc(50% - 50vw);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 3rem 0;
+      font-family: 'Outfit', sans-serif;
+      color: #201a2f;
+      background:
+        radial-gradient(circle at 12% 22%, rgba(109, 93, 246, 0.12), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(217, 70, 239, 0.10), transparent 22%),
+        radial-gradient(circle at 55% 82%, rgba(59, 130, 246, 0.10), transparent 25%),
+        linear-gradient(135deg, #f7f7fb 0%, #f8fbff 46%, #efeefe 100%);
+      box-sizing: border-box;
+    }
+
+    .zemythra-bottom-section-fullwidth * { box-sizing: border-box; }
+
+    .zemythra-bottom-section-fullwidth .bg-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.22;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%236d5df6' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' opacity='0.68'%3E%3Cpath d='M30 35h18v18H30z'/%3E%3Cpath d='M39 26v36M22 44h34'/%3E%3Cpath d='M94 34c10-11 27-11 37 0 10 11 10 28 0 39l-19 18-18-18c-10-11-10-28 0-39z'/%3E%3Cpath d='M165 36c13 0 23 10 23 23s-10 23-23 23-23-10-23-23 10-23 23-23z'/%3E%3Cpath d='M152 59h26M165 46v26'/%3E%3Cpath d='M28 124c13-22 45-22 58 0'/%3E%3Cpath d='M39 127c0-11 8-19 18-19s18 8 18 19'/%3E%3Cpath d='M107 130c7-15 30-15 37 0l6 14h-49z'/%3E%3Cpath d='M170 118l10 10 20-20'/%3E%3Cpath d='M170 159c0-14 11-25 25-25'/%3E%3Cpath d='M28 184h32'/%3E%3Cpath d='M44 168v32'/%3E%3Cpath d='M104 178c0-8 6-14 14-14h4c8 0 14 6 14 14s-6 14-14 14h-4c-8 0-14-6-14-14z'/%3E%3Cpath d='M168 176c9 0 16 7 16 16'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      background-repeat: repeat;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.78), rgba(0,0,0,0.3));
+    }
+
+    /* .zemythra-bottom-card {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 1200px);
+      margin: 0 1rem;
+      border: 1px solid rgba(96, 77, 148, 0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.55));
+      backdrop-filter: blur(14px);
+      border-radius: 38px;
+      box-shadow: 0 18px 50px rgba(101, 75, 170, 0.14);
+      overflow: hidden;
+    } */
+
+    .zemythra-bottom-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(109,93,246,0.12), transparent 20%),
+        radial-gradient(circle at 78% 20%, rgba(236,72,153,0.12), transparent 18%),
+        radial-gradient(circle at 55% 90%, rgba(59,130,246,0.12), transparent 18%);
+      pointer-events: none;
+    }
+
+    .zemythra-bottom-inner {
+      position: relative;
+      z-index: 1;
+      padding: 2.25rem 2rem 1.2rem;
+    }
+
+    .zemythra-bottom-top {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 1rem 1rem 1.25rem;
+    }
+
+    .zemythra-bottom-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* .zemythra-brand-mark {
+      width: 58px;
+      height: 58px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #6d5df6, #d946ef);
+      box-shadow: 0 16px 34px rgba(109, 93, 246, 0.24);
+      color: white;
+      flex-shrink: 0;
+    } */
+
+    .zemythra-eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: #7c3aed;
+      margin-bottom: 0.2rem;
+    }
+
+    .zemythra-subtext {
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .zemythra-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 5vw, 4.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin: 0 0 1rem 0;
+      color: #201a2f;
+    }
+
+    .zemythra-hash {
+      background: linear-gradient(135deg, #6d5df6, #d946ef);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .zemythra-tagline {
+      color: #6f6782;
+      font-size: clamp(1rem, 1.8vw, 1.18rem);
+      line-height: 1.8;
+      max-width: 42ch;
+      margin: 0 0 1.25rem 0;
+    }
+
+    .zemythra-pill-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .zemythra-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.85rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(109,93,246,0.14);
+      background: rgba(255,255,255,0.58);
+      color: #3d3554;
+      font-weight: 500;
+      backdrop-filter: blur(8px);
+    }
+
+    .zemythra-inline-card {
+      min-width: 260px;
+      border-radius: 28px;
+      border: 1px solid rgba(109,93,246,0.16);
+      background: rgba(255,255,255,0.54);
+      padding: 1.25rem;
+      box-shadow: 0 18px 40px rgba(109,93,246,0.10);
+      backdrop-filter: blur(10px);
+    }
+
+    .zemythra-inline-card .title-small {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #a855f7;
+      margin-bottom: 0.9rem;
+    }
+
+    .zemythra-footer-grid {
+      border-top: 1px solid rgba(96, 77, 148, 0.12);
+      padding: 1rem 2rem 1.1rem;
+      background: rgba(255,255,255,0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .zemythra-footer-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.95rem;
+      color: #6f6782;
+    }
+
+    @media (min-width: 992px) {
+      .zemythra-bottom-top {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 1.5rem 2rem 1.4rem;
+      }
+
+      .zemythra-footer-grid {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  </style>
+
+  <div class="bg-pattern"></div>
+  <div class="zemythra-bottom-card">
+    <div class="zemythra-bottom-inner">
+      <div class="zemythra-bottom-top">
+        <div class="zemythra-main-copy" style="max-width: 720px;">
+          <div class="zemythra-bottom-brand">
+            <div class="zemythra-brand-mark" aria-hidden="true">
+              
+            </div>
+            
+          </div>
+
+          <h2 class="zemythra-title">With Care 👐 & love ❤️ — <span class="zemythra-hash">#Zemythra</span></h2>
+          <p class="zemythra-tagline">— designed to bring caring health intelligence closer to every patient, family, and hospital conversation.</p>
+
+          <!-- <div class="zemythra-pill-wrap">
+            <span class="zemythra-pill">❤️ Care-first design</span>
+            <span class="zemythra-pill">🧠 Health AI assistance</span>
+            <span class="zemythra-pill">🏥 Human-centered guidance</span>
+          </div>
+        </div> -->
+
+        <div class="zemythra-inline-card">
+          <div class="zemythra-micro mb-3"><span>📍</span><span>Built in Hyderabad</span></div>
+          <div class="zemythra-micro mb-4"><span>✨</span><span>Made by Wesleyian</span></div>
+          <div class="zemythra-micro mb-4"><span>💻</span><span>Executed by Developers</span></div>
+  
+  
+        </div>
+      </div>
+    </div>
+
+    <div class="zemythra-footer-grid">
+      <div class="zemythra-footer-right">
+        <span>&#169;All copyrights are reserved</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
