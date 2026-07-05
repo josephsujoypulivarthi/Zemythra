@@ -1,4 +1,4 @@
-An Health Assitant System to montior pateint health and trigger health alerts, integrated with pedictive model to solve queries and generate reports.
+An Health Assitant System to montior pateint health data and trigger medical alerts, integrated with pedictive model to solve user queries with accuracy.
 # Zemythra 
 # Major Project C
 # 🎓 Project Overview
