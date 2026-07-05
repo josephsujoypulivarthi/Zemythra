@@ -1,6 +1,6 @@
+An Health Assitant System to montior pateint health and trigger health alerts, integrated with pedictive model to solve queries and generate reports.
 # Zemythra 
 # Major Project C
-
 # 🎓 Project Overview
 
 This project presents a Clinical Intelligence System designed to predict disease risk, analyze temporal disease progression, and support clinical decision-making using Machine Learning, Deep Learning (LSTM), and Explainable AI.
