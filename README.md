@@ -1,5 +1,5 @@
 # Zemythra 
-An AI - Health Assistant System to montior patient health based on supervised data and checks on the health recovery by progression model, trigger automated medical alerts - due to anomaly detection, integrated with opensource AI model.It uses this AI model to solve or answer user health queries with accuracy.
+An AI - Health Assistant System to monitor patient health based on supervised data and health-checks on the recovery by progression model, trigger automated medical alerts - due to anomaly detection, integrated with opensource AI model. It uses this AI model to solve or answer patients health queries with accuracy.
 
 # Major Project C
 # 🎓 Project Overview
