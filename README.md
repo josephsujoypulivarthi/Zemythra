@@ -1,5 +1,5 @@
 # Zemythra 
-An Health Assitant System to montior pateint health data and trigger medical alerts, integrated with pedictive model to solve user queries with accuracy.
+An Health Assitant System to montior pateint health data and trigger medical alerts, integrated with AI model. Also, It uses AI model to solve user health queries with accuracy.
 # Major Project C
 # 🎓 Project Overview
 
