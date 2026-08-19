@@ -1,12 +1,16 @@
-#chatbot.html 
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  
+  <script>
+    if (!localStorage.getItem("token")) {
+      window.location.href = "login.html";
+    }
+    function logoutUser() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
 
-if (!user) {
-  window.location.href = "login.html";
-}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Health AI Pro</title>
@@ -33,23 +37,12 @@ if (!user) {
       font-family: 'Satoshi', sans-serif;
       color: var(--text);
       background-image: url('https://img.freepik.com/premium-photo/black-background-with-neon-signs-picture-phone_900775-4760.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  font-family: 'Outfit', sans-serif;
-  color: #1f2937;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      overflow: hidden;
     }
-
-
-
-
-
-
-
 
     .glass {
       background: var(--surface);
@@ -112,8 +105,17 @@ if (!user) {
           </div>
         </div>
 
-
         <div class="space-y-6">
+          
+          <div class="flex flex-col gap-2 mb-4">
+            <button onclick="window.location.href='homepage.html'" class="w-full text-left px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition font-semibold flex items-center gap-2">
+              <i data-lucide="home" class="w-4 h-4"></i> Home
+            </button>
+            <button onclick="logoutUser()" class="w-full text-left px-4 py-2 bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition font-semibold flex items-center gap-2">
+              <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+            </button>
+          </div>
+
           <div>
             <label class="text-sm font-semibold text-slate-700 block mb-3">Profile</label>
             <select id="userSelect" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-100">
@@ -122,7 +124,6 @@ if (!user) {
               <option>Guest</option>
             </select>
           </div>
-
 
           <div>
             <p class="text-sm font-semibold text-slate-700 mb-3">Quick status</p>
@@ -133,7 +134,6 @@ if (!user) {
             </div>
           </div>
 
-
           <div class="pt-6 border-t border-slate-200/70">
             <p class="text-sm font-semibold text-slate-700 mb-3">Upload guide</p>
             <ul class="space-y-3 text-sm text-slate-600">
@@ -143,7 +143,6 @@ if (!user) {
           </div>
         </div>
       </aside>
-
 
       <main class="lg:col-span-4 glass rounded-[32px] overflow-hidden flex flex-col min-h-[88vh]">
         <div class="grad p-5 md:p-6 text-white">
@@ -161,7 +160,6 @@ if (!user) {
           </div>
         </div>
 
-
         <div id="messagesContainer" class="messages-scroll flex-1 overflow-y-auto p-5 md:p-8 bg-gradient-to-b from-slate-50/80 to-white/70">
           <div class="text-center py-12 md:py-16">
             <div class="w-24 h-24 rounded-[28px] grad mx-auto mb-6 flex items-center justify-center shadow-2xl text-white">
@@ -171,7 +169,6 @@ if (!user) {
             <p class="text-slate-500 mt-3 max-w-md mx-auto">Ask a health question, upload an image, or upload a file. You will get text output, model-based video suggestions, copy/download buttons, and follow-up prompts.</p>
           </div>
         </div>
-
 
         <div class="border-t border-slate-200/80 p-4 md:p-6 bg-white/90">
           <div class="flex items-end gap-3 md:gap-4">
@@ -191,12 +188,10 @@ if (!user) {
               </div>
             </div>
 
-
             <div class="flex-1">
               <textarea id="messageInput" rows="2" placeholder="Describe your health concern, symptom, or question..." class="w-full resize-none rounded-[28px] border-2 border-slate-200 px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 text-[16px] leading-7"></textarea>
               <div class="flex flex-wrap gap-2 mt-3" id="attachmentInfo"></div>
             </div>
-
 
             <select id="modelSelect" class="px-4 py-3 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:ring-4 focus:ring-indigo-100">
               <option value="gemma3:4b">Gemma 3 (4B) ⭐</option>
@@ -204,12 +199,10 @@ if (!user) {
               <option value="gemma3:4b-it-q4_K_M ">Gemma 2.5 (4B) ⚡</option>
             </select>
 
-
             <button id="sendButton" class="w-14 h-14 md:w-16 md:h-16 rounded-[24px] grad text-white shadow-xl hover:shadow-2xl flex items-center justify-center" aria-label="Send message">
               <i data-lucide="send" class="w-6 h-6"></i>
             </button>
           </div>
-
 
           <div id="typingIndicator" class="hidden mt-4 flex items-center gap-3 text-slate-500">
             <div class="flex gap-1">
@@ -224,16 +217,10 @@ if (!user) {
     </div>
   </div>
 
-
- 
-
-
   <script>
   lucide.createIcons();
 
-
   const API_URL = 'http://127.0.0.1:8000/chat';
-
 
   const messagesContainer = document.getElementById('messagesContainer');
   const messageInput = document.getElementById('messageInput');
@@ -247,26 +234,21 @@ if (!user) {
   const attachmentInfo = document.getElementById('attachmentInfo');
   const modelSelect = document.getElementById('modelSelect');
 
-
   let selectedImage = null;
   let messageCounter = 0;
-
 
   function toggleMenu(e) {
     e.stopPropagation();
     addMenu.classList.toggle('show');
   }
 
-
   addBtn.addEventListener('click', toggleMenu);
-
 
   document.addEventListener('click', (e) => {
     if (!addBtn.contains(e.target) && !addMenu.contains(e.target)) {
       addMenu.classList.remove('show');
     }
   });
-
 
   if (imageUpload) {
     imageUpload.addEventListener('change', (e) => {
@@ -275,7 +257,6 @@ if (!user) {
       addMenu.classList.remove('show');
     });
   }
-
 
   function renderAttachmentInfo() {
     attachmentInfo.innerHTML = '';
@@ -288,12 +269,10 @@ if (!user) {
     }
   }
 
-
   function showTyping(show) {
     typingIndicator.classList.toggle('hidden', !show);
     if (show) messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
-
 
   function escapeHtml(text) {
     const div = document.createElement('div');
@@ -301,13 +280,11 @@ if (!user) {
     return div.innerHTML;
   }
 
-
   function formatText(text) {
     return escapeHtml(text)
       .replace(/\n\n/g, '<br><br>')
       .replace(/\n/g, '<br>');
   }
-
 
   function downloadText(content, filename) {
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -318,7 +295,6 @@ if (!user) {
     a.click();
     URL.revokeObjectURL(url);
   }
-
 
   async function copyText(content, button) {
     try {
@@ -335,7 +311,6 @@ if (!user) {
     }
   }
 
-
   function createSuggestionButtons(items) {
     return items.map(item => `
       <button
@@ -345,13 +320,11 @@ if (!user) {
     `).join('');
   }
 
-
   window.useSuggestion = function(text) {
     messageInput.value = text;
     messageInput.focus();
     updateTokenCounter(text);
   };
-
 
   function addUserMessage(content) {
     const html = `
@@ -365,11 +338,9 @@ if (!user) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-
   function addAssistantMessage(answer, videos = [], nextQuestions = []) {
     messageCounter += 1;
     const id = `answer-${messageCounter}`;
-
 
     const videoCards = videos.map(v => `
       <a href="${v.url}" target="_blank" rel="noopener noreferrer" class="block p-4 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
@@ -383,12 +354,10 @@ if (!user) {
       </a>
     `).join('');
 
-
     const html = `
       <div class="msg-enter flex justify-start mb-6">
         <div class="max-w-[88%] rounded-[30px] bg-white border border-slate-200 shadow-lg px-5 py-5 md:px-6 md:py-6">
           <div class="markdown text-[15px] md:text-[16px] leading-7 text-slate-700" id="${id}">${formatText(answer)}</div>
-
 
           <div class="flex flex-wrap gap-3 mt-5">
             <button class="action-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-sm font-medium transition-all" onclick="copyText(document.getElementById('${id}').innerText, this)">
@@ -399,14 +368,12 @@ if (!user) {
             </button>
           </div>
 
-
           ${videos.length ? `
             <div class="mt-6">
               <h4 class="text-sm font-black tracking-wide text-slate-800 mb-3">Related video suggestions</h4>
               <div class="grid gap-3">${videoCards}</div>
             </div>
           ` : ''}
-
 
           ${nextQuestions.length ? `
             <div class="mt-6">
@@ -420,12 +387,10 @@ if (!user) {
       </div>
     `;
 
-
     messagesContainer.insertAdjacentHTML('beforeend', html);
     lucide.createIcons();
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
-
 
   function addErrorMessage(content) {
     const html = `
@@ -439,51 +404,41 @@ if (!user) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-
   function updateTokenCounter(text = '') {
     const estimate = Math.min(4096, Math.max(40, Math.ceil(text.length * 1.3)));
     tokenCount.textContent = `${estimate} / 4K tokens`;
   }
 
-
   async function sendMessage() {
     const message = messageInput.value.trim();
 
-
     if (!message && !selectedImage) return;
-
 
     const userText = message || 'Uploaded image for analysis';
     addUserMessage(userText);
     updateTokenCounter(userText);
-
 
     messageInput.value = '';
     messageInput.disabled = true;
     sendButton.disabled = true;
     showTyping(true);
 
-
     try {
       const formData = new FormData();
       formData.append('prompt', userText);
       formData.append('model', modelSelect.value);
 
-
       if (selectedImage) {
         formData.append('image', selectedImage);
       }
-
 
       const response = await fetch("http://127.0.0.1:8000/chat", {
         method: 'POST',
         body: formData
       });
 
-
       const text = await response.text();
       let data;
-
 
       try {
         data = JSON.parse(text);
@@ -491,24 +446,22 @@ if (!user) {
         throw new Error(`Invalid JSON from backend: ${text}`);
       }
 
-
       if (!response.ok) {
         throw new Error(data.error || `HTTP ${response.status}`);
       }
-
 
       addAssistantMessage(
         data.response || 'No response received.',
         data.video_suggestions || [],
         data.next_questions || []
       );
+      
       // 🚨 AI-BASED EMERGENCY TRIGGER
-if (data.risk_score && data.risk_score > 85) {
+      if (data.risk_score && data.risk_score > 85) {
+        localStorage.setItem("emergency_trigger", "true");
+        window.location.href = "emergency.html";
+      }
 
-  localStorage.setItem("emergency_trigger", "true");
-
-  window.location.href = "emergency.html";
-}
     } catch (error) {
       addErrorMessage('Backend error: ' + error.message);
     } finally {
@@ -520,18 +473,13 @@ if (data.risk_score && data.risk_score > 85) {
       if (imageUpload) imageUpload.value = '';
       renderAttachmentInfo();
     }
-
-   
   }
 
-
   sendButton.addEventListener('click', sendMessage);
-
 
   messageInput.addEventListener('input', (e) => {
     updateTokenCounter(e.target.value);
   });
-
 
   messageInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -539,7 +487,6 @@ if (data.risk_score && data.risk_score > 85) {
       sendMessage();
     }
   });
-
 
   clearChat.addEventListener('click', () => {
     messagesContainer.innerHTML = `
@@ -556,17 +503,8 @@ if (data.risk_score && data.risk_score > 85) {
     updateTokenCounter('');
   });
 
-
   updateTokenCounter('');
   lucide.createIcons();
-  const user = localStorage.getItem("zemythra_user");
-if (!user) {
-  window.location.href = "login.html";
-}
-</script>
-
-<button onclick="logoutUser()">Logout</button>
- function logoutUser() {
-  localStorage.removeItem("zemythra_user");
-  window.location.href = "login.html";
-}
+  </script>
+</body>
+</html>

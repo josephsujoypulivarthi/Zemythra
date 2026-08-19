@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+    if (!localStorage.getItem("token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <title>Zemythra Emergency System</title>
 
   <!-- Tailwind -->
